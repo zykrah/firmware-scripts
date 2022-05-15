@@ -1,0 +1,3 @@
+*.h
+*.json
+__pycache__
