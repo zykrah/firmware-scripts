@@ -1,25 +1,19 @@
 from copy import deepcopy
-from serialize import serialize
+from serialize import serialize, sort_keys
 from deserialize import deserialize
 from collections import OrderedDict
 
-from util import Key, Keyboard, KeyboardMetadata, gen_uid
+from util import Keyboard, gen_uid, min_x_y
 
 
 # GENERATE INFO.JSON
 # TO-DO:
 # - make a way of converting the other way around (INFO.JSON -> KEYBOARD)
 # DONE detect bounds of default layout and offset every key by a certain amount
-# - automatically generate a layout_all based on multilayout with maximum amount of keys
+# DONE automatically generate a layout_all based on multilayout with maximum amount of keys
+# - create functions to easily set certain multilayouts
+# - be able to manually set the layout_all
 # - create multiple layouts based on a list of multilayout options
-
-# class MultilayoutKey(Key):
-#     def __init__(self, key, ml_label_index=8, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         for k in key.__dict__.keys():
-#             setattr(self, k, getattr(key, k))
-#         # self.__dict__.update(key.__dict__)
-#         self.ml_index, self.ml_val = map(int, key.labels[ml_label_index].split(','))
 
 def check_multilayout_keys(kbd: Keyboard) -> bool:
     keys = []
@@ -27,101 +21,121 @@ def check_multilayout_keys(kbd: Keyboard) -> bool:
         if key.labels[3].isnumeric() and key.labels[5].isnumeric():
             keys.append(key)
     return keys
-
-def max_x_y(keys: list) -> float:
-    max_x: float = -1
-    max_y: float = -1
-
-    for key in keys:
-        if key.x > max_x:
-            max_x = key.x
-        if key.y > max_y:
-            max_y = key.y
-
-    return max_x, max_y
-
-def min_x_y(keys: list) -> float:
-    min_x, min_y = max_x_y(keys)
-
-    for key in keys:
-        if key.x < min_x:
-            min_x = key.x
-        if key.y < min_y:
-            min_y = key.y
-
-    return min_x, min_y
         
 def kbd_to_qmk_info(kbd: Keyboard) -> dict:
     kbd = deepcopy(kbd)
-    ml_label_index = 8
-    ml_keys = check_multilayout_keys()
-    # default_keys = [k for k in kbd.keys if k not in ml_keys or int(k.labels[ml_label_index].split(',')[1]) == 0]
-    default_keys = []
+    ml_keys = check_multilayout_keys(kbd)
+
+    # This list will replace kbd.keys later
+    # It is a list with only the keys to be included in the info.json
+    qmk_keys = [] 
+    # Add non-multilayout keys to the list for now
+    for key in [k for k in kbd.keys if k not in ml_keys]:
+        qmk_keys.append(key)
+
+
+    # Generate a dict of all multilayouts
+    # E.g. Used to test and figure out the multilayout value with the maximum amount of keys
     ml_dict = {}
-
-    for k in kbd.keys:
-        if k not in ml_keys:
-            default_keys.append(k)
-        else:
-            # ml_index, ml_val = map(int, k.labels[ml_label_index].split(','))
-            ml_ndx = int(k.labels[3])
-            ml_val = int(k.labels[5])
-            # if ml_val == 0:
-            #     default_keys.append(k)
-
-            if not ml_ndx in ml_dict.keys():
-                ml_dict[ml_ndx] = {}
-            if not ml_val in ml_dict[ml_ndx].keys():
-                ml_dict[ml_ndx][ml_val] = []
-            if not [int(k.labels[9]), int(k.labels[11])] in ml_dict[ml_ndx][ml_val]:
-                ml_dict[ml_ndx][ml_val].append([int(k.labels[9]), int(k.labels[11])])
-
-            ml_keys.append(k)
-
-    # ml_list = []
-    # for k in kbd.keys:
-    #     if k in ml_keys:
-    #         ml_index, ml_val = map(int, k.labels[ml_label_index].split(','))
-    #         ml_list.append([k, ml_index, ml_val])
-
-    # max_layout_keys = []
-    # for k in kbd.keys:
-    #     if k not in ml_keys:
-    #         max_layout_keys.append(k)
-    # for ml in ml_list:
-    #     ml_index, ml_val = map(int, ml[0].labels[ml_label_index].split(','))
-    #     # if ml_val == 0:
-    #     #     default_keys.append(k)
-
-    print(ml_dict)
-
-    for key in ml_keys:
+    for key in [k for k in kbd.keys if k in ml_keys]:
         ml_ndx = int(key.labels[3])
         ml_val = int(key.labels[5])
-        print(f"key: {ml_ndx},{ml_val}")
-        # print([i for i in ml_dict[ml_ndx][ml_val]])
-        print(max([len(i) for i in ml_dict[ml_ndx][ml_val]]))
-        if max([len(i) for i in ml_dict[ml_ndx][ml_val]]) == len(ml_dict[ml_ndx][ml_val]):
+
+        # Create dict with multilayout index if it doesn't exist
+        if not ml_ndx in ml_dict.keys():
+            ml_dict[ml_ndx] = {}
+
+        # Create dict with multilayout value if it doesn't exist
+        # Also create list of keys if it doesn't exist
+        if not ml_val in ml_dict[ml_ndx].keys():
+            ml_dict[ml_ndx][ml_val] = []
+
+        # Add key to dict if not in already
+        if not key in ml_dict[ml_ndx][ml_val]:
+            ml_dict[ml_ndx][ml_val].append(key)
+
+
+    # Iterate over multilayout keys
+    for key in [k for k in kbd.keys if k in ml_keys]:
+        ml_ndx = int(key.labels[3])
+        ml_val = int(key.labels[5])
+
+        # list of all amount of keys over all val options
+        ml_val_length_list = [len(ml_dict[ml_ndx][i]) for i in ml_dict[ml_ndx].keys() if isinstance(i, int)]
+        max_val_len = max(ml_val_length_list) # maximum amount of keys over all val options
+        current_val_len = len(ml_dict[ml_ndx][ml_val]) # amount of keys in current val
+        current_is_max = max_val_len == current_val_len
+
+        # If all multilayout values/options have the same amount of keys
+        all_same_length = len(set(ml_val_length_list)) == 1
+
+        # If the current multilayout value/option is the max one
+        if current_is_max:
             if not "max" in ml_dict[ml_ndx].keys():
-                ml_dict[ml_ndx]["max"] = ml_val
+                if all_same_length:
+                    ml_dict[ml_ndx]["max"] = 0 # Use the default
+                else:
+                    ml_dict[ml_ndx]["max"] = ml_val
+            
+            # Skip if not the max layout value/option
             if not ml_dict[ml_ndx]["max"] == ml_val:
-            	continue
-            print("yes")
-            default_keys.append(key)
+                continue
 
-    print(len(default_keys))
+            # If the current multilayout value/option isn't default,
+            if ml_val > 0:
+                # Check if the offset has been calculated yet.
+                if not "offsets" in ml_dict[ml_ndx].keys():
+                    # If not, calculate and set the offset
+                    xmin, ymin = min_x_y(ml_dict[ml_ndx][0])
+                    x, y = min_x_y(ml_dict[ml_ndx][ml_val])
 
-    qmk_layout = []
-    x_offset, y_offset = min_x_y(default_keys)
+                    ml_x_offset = xmin - x
+                    ml_y_offset = ymin - y
 
+                    ml_dict[ml_ndx]["offsets"] = (ml_x_offset, ml_y_offset)
+                else:
+                    # If so, just get the offset from ml_dict
+                    ml_x_offset, ml_y_offset = ml_dict[ml_ndx]["offsets"]
+                
+                # Offset the x and y values
+                key.x += ml_x_offset
+                key.y += ml_y_offset
+
+            # Add the key to the final list
+            qmk_keys.append(key)
+
+    # Offset all the remaining keys (align against the top left)
+    x_offset, y_offset = min_x_y(qmk_keys)
+    for key in qmk_keys:
+        key.x -= x_offset
+        key.y -= y_offset
+
+    # Override kbd.keys with the keys only to be included in the info.json
+    kbd.keys = qmk_keys
+    sort_keys(kbd.keys) # sort keys (some multilayout keys may not be in the right order)
+
+
+    # # To view what the layout_all will look like (as a KLE)
+    # import json
+    # from util import write_file
+    # test_path = 'test.json'
+    # write_file(test_path, json.dumps(serialize(kbd), ensure_ascii=False, indent=2))
+
+
+    # The final list that will actually be used in the info.json
+    qmk_layout_all = []
+
+    # Finally convert keyboard  into 
     for key in kbd.keys:
-        if key.decal:
+        # Ignore ghost keys (e.g. blockers)
+        if key.decal: 
             continue
-
+        
+        # Initialize a key (dict)
         qmk_key = OrderedDict(
             label = "",
-            x = key.x - x_offset ,
-            y = key.y - y_offset,
+            x = key.x,
+            y = key.y,
         )
 
         if key.width != 1:
@@ -129,26 +143,17 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
         if key.height != 1:
             qmk_key['h'] = key.height
 
-        if key.labels[9] and key.labels[11]:
-            if key.labels[9].isnumeric() and key.labels[11].isnumeric():
-
-                if not key in default_keys:
-                    continue
-
+        if key.labels[9].isnumeric() and key.labels[11].isnumeric():
             row = key.labels[9]
             col = key.labels[11]
             qmk_key['matrix'] = [int(row), int(col)]
 
-        # if key.labels[0]:
-        #     if re.search(r"\-{0,1}\d*,\-{0,1}", key.labels[0]):
-        #         row, col = map(int, key.labels[0].split(','))
-        #         qmk_key['matrix'] = [int(row), int(col)]
         if key.labels[0]:
             qmk_key['label'] = key.labels[0]
         else:
             del (qmk_key['label'])
 
-        qmk_layout.append(qmk_key)
+        qmk_layout_all.append(qmk_key)
 
     keyboard = {
         'keyboard_name': kbd.meta.name,
@@ -156,18 +161,19 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
         'maintainer': 'qmk',
         'layouts': {
             'LAYOUT_all': {
-                'layout': qmk_layout
+                'layout': qmk_layout_all
             }
         }
     }
 
     return keyboard
 
-# CONVERT KLE (with simple matrix coords) TO PROPER VIA KLE
+# CONVERT SIMPLIZED KLE TO VIA JSON
 # TO-DO
-# - detect if keyboard can be converted
-# - make a way of converting the other way around (VIA KLE -> KEYBOARD)
+# - detect if keyboard can be converted first
+# - make a way of converting the other way around (VIA KLE/JSON -> SIMPLIZED KLE)
 # - add way to input the index for which label indices to use for rows/cols/multilayout etc
+# - change this function to have a more similar structure to the qmk info converter (for multilayouts)
 
 def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:str=None, name:str=None) -> dict:
     if not product_id:
@@ -221,8 +227,6 @@ def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:
         ml_ndx_lbl = og_key.labels[3] # Multilayout index
         ml_val_lbl = og_key.labels[5] # Multilayout value
 
-        # if not (ml_ndx_lbl and ml_val_lbl):
-        #     continue
         if not (ml_ndx_lbl.isnumeric() and ml_val_lbl.isnumeric()):
             continue
 
@@ -408,3 +412,4 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, product_id:str=None, vendor_id
 # GENERATE KEYBOARD.H (LAYOUT MACRO)
 # TO-DO:
 # - start this
+# - extend to generate keymap.c

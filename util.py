@@ -67,6 +67,32 @@ class Keyboard:
     keys: List[Key] = _dcf_list()
 
 
+# Gets the bottom right coordinate of bounding box of a cluster of keys
+def max_x_y(keys: list) -> float:
+    max_x: float = -1
+    max_y: float = -1
+
+    for key in keys:
+        if key.x > max_x:
+            max_x = key.x
+        if key.y > max_y:
+            max_y = key.y
+
+    return max_x, max_y
+
+# Gets the top left coordinate of bounding box of a cluster of keys
+def min_x_y(keys: list) -> float:
+    min_x, min_y = max_x_y(keys)
+
+    for key in keys:
+        if key.x < min_x:
+            min_x = key.x
+        if key.y < min_y:
+            min_y = key.y
+
+    return min_x, min_y
+
+
 def read_file(path: str):
     with open(path, 'r', encoding='utf-8') as file:
         return file.read()
