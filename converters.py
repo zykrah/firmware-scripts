@@ -95,9 +95,7 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
     for key in ml_keys:
         ml_index = int(k.labels[3])
         ml_val = int(k.labels[5])
-        ml_dict[ml_ndx][ml_val]
         if max([len(i) for i in ml_dict[ml_ndx]) == len(ml_dict[ml_ndx][ml_val]):
-            
             default_keys.add(key)
 
     qmk_layout = []
