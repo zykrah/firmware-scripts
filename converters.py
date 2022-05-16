@@ -56,6 +56,8 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
     ml_keys = check_multilayout_keys(kbd)
     # default_keys = [k for k in kbd.keys if k not in ml_keys or int(k.labels[ml_label_index].split(',')[1]) == 0]
     default_keys = []
+    ml_dict = {}
+
     for k in kbd.keys:
         if k not in ml_keys:
             default_keys.append(k)
@@ -63,8 +65,17 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
             # ml_index, ml_val = map(int, k.labels[ml_label_index].split(','))
             ml_index = int(k.labels[3])
             ml_val = int(k.labels[5])
-            if ml_val == 0:
-                default_keys.append(k)
+            # if ml_val == 0:
+            #     default_keys.append(k)
+
+            if not ml_ndx in ml_dict.keys():
+                ml_dict[ml_ndx] = {}
+            if not ml_val in ml_dict[ml_ndx].keys():
+                ml_dict[ml_ndx][ml_val] = []
+            if not [int(key.labels[9]), int(key.labels[11])] in ml_dict[ml_ndx][ml_val]:
+                ml_dict[ml_ndx][ml_val].append([int(key.labels[9]), int(key.labels[11])])
+
+            ml_keys.append(key)
 
     # ml_list = []
     # for k in kbd.keys:
@@ -80,6 +91,14 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
     #     ml_index, ml_val = map(int, ml[0].labels[ml_label_index].split(','))
     #     # if ml_val == 0:
     #     #     default_keys.append(k)
+
+    for key in ml_keys:
+        ml_index = int(k.labels[3])
+        ml_val = int(k.labels[5])
+        ml_dict[ml_ndx][ml_val]
+        if max([len(i) for i in ml_dict[ml_ndx]) == len(ml_dict[ml_ndx][ml_val]):
+            
+            default_keys.add(key)
 
     qmk_layout = []
     x_offset, y_offset = min_x_y(default_keys)
