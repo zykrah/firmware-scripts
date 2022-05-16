@@ -52,8 +52,9 @@ def min_x_y(keys: list) -> float:
     return min_x, min_y
         
 def kbd_to_qmk_info(kbd: Keyboard) -> dict:
+    kbd = deepcopy(kbd)
     ml_label_index = 8
-    ml_keys = check_multilayout_keys(kbd)
+    ml_keys = check_multilayout_keys()
     # default_keys = [k for k in kbd.keys if k not in ml_keys or int(k.labels[ml_label_index].split(',')[1]) == 0]
     default_keys = []
     ml_dict = {}
@@ -63,7 +64,7 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
             default_keys.append(k)
         else:
             # ml_index, ml_val = map(int, k.labels[ml_label_index].split(','))
-            ml_index = int(k.labels[3])
+            ml_ndx = int(k.labels[3])
             ml_val = int(k.labels[5])
             # if ml_val == 0:
             #     default_keys.append(k)
@@ -72,10 +73,10 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
                 ml_dict[ml_ndx] = {}
             if not ml_val in ml_dict[ml_ndx].keys():
                 ml_dict[ml_ndx][ml_val] = []
-            if not [int(key.labels[9]), int(key.labels[11])] in ml_dict[ml_ndx][ml_val]:
-                ml_dict[ml_ndx][ml_val].append([int(key.labels[9]), int(key.labels[11])])
+            if not [int(k.labels[9]), int(k.labels[11])] in ml_dict[ml_ndx][ml_val]:
+                ml_dict[ml_ndx][ml_val].append([int(k.labels[9]), int(k.labels[11])])
 
-            ml_keys.append(key)
+            ml_keys.append(k)
 
     # ml_list = []
     # for k in kbd.keys:
@@ -92,11 +93,23 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
     #     # if ml_val == 0:
     #     #     default_keys.append(k)
 
+    print(ml_dict)
+
     for key in ml_keys:
-        ml_index = int(k.labels[3])
-        ml_val = int(k.labels[5])
-        if max([len(i) for i in ml_dict[ml_ndx]) == len(ml_dict[ml_ndx][ml_val]):
-            default_keys.add(key)
+        ml_ndx = int(key.labels[3])
+        ml_val = int(key.labels[5])
+        print(f"key: {ml_ndx},{ml_val}")
+        # print([i for i in ml_dict[ml_ndx][ml_val]])
+        print(max([len(i) for i in ml_dict[ml_ndx][ml_val]]))
+        if max([len(i) for i in ml_dict[ml_ndx][ml_val]]) == len(ml_dict[ml_ndx][ml_val]):
+            if not "max" in ml_dict[ml_ndx].keys():
+                ml_dict[ml_ndx]["max"] = ml_val
+            if not ml_dict[ml_ndx]["max"] == ml_val:
+            	continue
+            print("yes")
+            default_keys.append(key)
+
+    print(len(default_keys))
 
     qmk_layout = []
     x_offset, y_offset = min_x_y(default_keys)
@@ -107,7 +120,7 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
 
         qmk_key = OrderedDict(
             label = "",
-            x = key.x - x_offset,
+            x = key.x - x_offset ,
             y = key.y - y_offset,
         )
 
