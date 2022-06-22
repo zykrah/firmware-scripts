@@ -1,9 +1,8 @@
-from functools import cmp_to_key
 from dataclasses import dataclass
 from typing import List
 from copy import deepcopy
 
-from util import Key, Keyboard, KeyboardMetadata, UB_LABEL_MAP
+from util import Key, Keyboard, KeyboardMetadata, UB_LABEL_MAP, sort_keys
 
 @dataclass
 class SerializeCluster:
@@ -93,16 +92,6 @@ def compare_text_sizes(current, key, labels):
             return False
     return True
 
-def sort_keys(keys:list):
-    def func(a, b):
-        return ((a.rotation_angle+360)%360 - (a.rotation_angle+360)%360 or 
-        (a.rotation_x - b.rotation_x) or
-        (a.rotation_y - b.rotation_y) or
-        (a.y - b.y) or
-        (a.x - b.x))
-
-    keys.sort(key=cmp_to_key(func))
-
 def is_empty_object(o):
     for prop in o:
         return False
@@ -160,8 +149,8 @@ def serialize(kbd: Keyboard) -> list:
         current.rotation_angle = serialize_prop(props, "r", key.rotation_angle, current.rotation_angle)
         current.rotation_x = serialize_prop(props, "rx", key.rotation_x, current.rotation_x)
         current.rotation_y = serialize_prop(props, "ry", key.rotation_y, current.rotation_y)
-        current.y += serialize_prop(props, "y", key.y-current.y, 0)
-        current.x += serialize_prop(props, "x", key.x-current.x, 0) + key.width
+        current.y += serialize_prop(props, "y", key.y-current.y, 0.)
+        current.x += serialize_prop(props, "x", key.x-current.x, 0.) + key.width
         current.color = serialize_prop(props, "c", key.color, current.color)
         if not ordered.textColor[0]:
             ordered.textColor[0] = key.default.textColor
@@ -196,12 +185,12 @@ def serialize(kbd: Keyboard) -> list:
                     current.f2 = None
                     current.textSize = serialize_prop(props, "fa", ordered.textSize, [])
 
-        serialize_prop(props, "w", key.width, 1)
-        serialize_prop(props, "h", key.height, 1)
+        serialize_prop(props, "w", key.width, 1.)
+        serialize_prop(props, "h", key.height, 1.)
         serialize_prop(props, "w2", key.width2, key.width)
         serialize_prop(props, "h2", key.height2, key.height)
-        serialize_prop(props, "x2", key.x2, 0)
-        serialize_prop(props, "y2", key.y2, 0)
+        serialize_prop(props, "x2", key.x2, 0.)
+        serialize_prop(props, "y2", key.y2, 0.)
         serialize_prop(props, "n", key.nub or False, False)
         serialize_prop(props, "l", key.stepped or False, False)
         serialize_prop(props, "d", key.decal or False, False)

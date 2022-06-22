@@ -2,7 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
-from util import Key, Keyboard, KeyboardMetadata, UB_LABEL_MAP
+from util import Key, Keyboard, KeyboardMetadata, UB_LABEL_MAP, sort_keys
 
 @dataclass
 class DeserializeCluster:
@@ -58,8 +58,8 @@ def deserialize(rows: List) -> Keyboard:  # noqa: C901
                     new_key: Key = deepcopy(current)
 
                     # Calculate some generated values
-                    new_key.width2 = current.width if new_key.width2 == 0 else current.width2
-                    new_key.height2 = current.height if new_key.height2 == 0 else current.height2
+                    new_key.width2 = current.width if new_key.width2 == 0. else current.width2
+                    new_key.height2 = current.height if new_key.height2 == 0. else current.height2
                     new_key.labels = reorder_labels_in(item.split("\n"), align)
                     new_key.textSize = [
                         (int(x) if x.isdecimal() else None) if isinstance(x, str) else x for x in reorder_labels_in(new_key.textSize, align)]
@@ -69,8 +69,8 @@ def deserialize(rows: List) -> Keyboard:  # noqa: C901
 
                     # Set up for the next key
                     current.x += current.width
-                    current.width = current.height = 1
-                    current.x2 = current.y2 = current.width2 = current.height2 = 0
+                    current.width = current.height = 1.
+                    current.x2 = current.y2 = current.width2 = current.height2 = 0.
                     current.nub = current.stepped = current.decal = False
                 else:
                     if k != 0 and any(item.get(v) is not None for v in ['r', 'rx', 'ry']):
@@ -145,6 +145,9 @@ def deserialize(rows: List) -> Keyboard:  # noqa: C901
                     setattr(kbd.meta, prop, rows_r[prop])
         else:
             _deserialize_error("unexpected", rows_r)
+
+    sort_keys(kbd.keys)
+
     return kbd
 
 

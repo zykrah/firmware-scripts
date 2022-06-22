@@ -3,7 +3,8 @@ from serialize import serialize, sort_keys
 from deserialize import deserialize
 from collections import OrderedDict
 
-from util import Keyboard, gen_uid, min_x_y
+from util import Keyboard, KeyboardMetadata, gen_uid, min_x_y, write_file
+import json
 
 
 # GENERATE INFO.JSON
@@ -12,6 +13,7 @@ from util import Keyboard, gen_uid, min_x_y
 # DONE detect bounds of default layout and offset every key by a certain amount
 # DONE automatically generate a layout_all based on multilayout with maximum amount of keys
 # - create functions to easily set certain multilayouts
+# - make more generic converter
 # - be able to manually set the layout_all
 # - create multiple layouts based on a list of multilayout options
 
@@ -70,39 +72,49 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
         all_same_length = len(set(ml_val_length_list)) == 1
 
         # If the current multilayout value/option is the max one
-        if current_is_max:
-            if not "max" in ml_dict[ml_ndx].keys():
-                if all_same_length:
-                    ml_dict[ml_ndx]["max"] = 0 # Use the default
-                else:
-                    ml_dict[ml_ndx]["max"] = ml_val
-            
-            # Skip if not the max layout value/option
-            if not ml_dict[ml_ndx]["max"] == ml_val:
+        if not "max" in ml_dict[ml_ndx].keys():
+            if all_same_length:
+                ml_dict[ml_ndx]["max"] = 0 # Use the default
+            elif current_is_max:
+                ml_dict[ml_ndx]["max"] = ml_val
+            else:
                 continue
+        
+        # Skip if not the max layout value/option 
+        # (can't use current_is_max because of cases where options have the same amount of keys)
+        if not ml_dict[ml_ndx]["max"] == ml_val:
+            continue
 
-            # If the current multilayout value/option isn't default,
-            if ml_val > 0:
-                # Check if the offset has been calculated yet.
-                if not "offsets" in ml_dict[ml_ndx].keys():
-                    # If not, calculate and set the offset
-                    xmin, ymin = min_x_y(ml_dict[ml_ndx][0])
-                    x, y = min_x_y(ml_dict[ml_ndx][ml_val])
+        # If the current multilayout value/option isn't default,
+        if ml_val > 0:
+            # Check if there is an offsets dict
+            if not "offsets" in ml_dict[ml_ndx].keys():
+                ml_dict[ml_ndx]["offsets"] = {}
 
-                    ml_x_offset = xmin - x
-                    ml_y_offset = ymin - y
+            # Check if the offset for this multilayout value has been calculated yet.
+            if not ml_val in ml_dict[ml_ndx]["offsets"].keys():
+                # If not, calculate and set the offset
+                xmin, ymin = min_x_y(ml_dict[ml_ndx][0])
+                x, y = min_x_y(ml_dict[ml_ndx][ml_val])
 
-                    ml_dict[ml_ndx]["offsets"] = (ml_x_offset, ml_y_offset)
-                else:
-                    # If so, just get the offset from ml_dict
-                    ml_x_offset, ml_y_offset = ml_dict[ml_ndx]["offsets"]
-                
-                # Offset the x and y values
-                key.x += ml_x_offset
-                key.y += ml_y_offset
+                ml_x_offset = xmin - x
+                ml_y_offset = ymin - y
 
-            # Add the key to the final list
-            qmk_keys.append(key)
+                ml_dict[ml_ndx]["offsets"][ml_val] = (ml_x_offset, ml_y_offset)
+            else:
+                # If so, just get the offset from ml_dict
+                ml_x_offset, ml_y_offset = ml_dict[ml_ndx]["offsets"][ml_val]
+            
+            # Offset the x and y values
+            key.x += ml_x_offset
+            key.y += ml_y_offset
+
+            if key.rotation_angle:
+                key.rotation_x -= x_offset
+                key.rotation_y -= y_offset
+
+        # Add the key to the final list
+        qmk_keys.append(key)
 
     # Offset all the remaining keys (align against the top left)
     x_offset, y_offset = min_x_y(qmk_keys)
@@ -115,7 +127,7 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
     sort_keys(kbd.keys) # sort keys (some multilayout keys may not be in the right order)
 
 
-    # # To view what the layout_all will look like (as a KLE)
+    # # DEBUG: To view what the layout_all will look like (as a KLE)
     # import json
     # from util import write_file
     # test_path = 'test.json'
@@ -175,11 +187,11 @@ def kbd_to_qmk_info(kbd: Keyboard) -> dict:
 # - add way to input the index for which label indices to use for rows/cols/multilayout etc
 # - change this function to have a more similar structure to the qmk info converter (for multilayouts)
 
-def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:str=None, name:str=None) -> dict:
+def kbd_to_via(kbd: Keyboard, vendor_id:str=None, product_id:str=None, lighting:str=None, name:str=None) -> dict:
+    if not vendor_id:
+        vendor_id = '0xFEED'
     if not product_id:
         product_id = '0x0000'
-    if not vendor_id:
-        vendor_id = '0x0000'
     if not lighting:
         lighting = 'none'
     if not name:
@@ -197,6 +209,7 @@ def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:
     
     for key in via_kbd.keys:
         og_key = deepcopy(key)
+        key.color = "#cccccc"
         key.labels = [None] * 12 # Empty labels
 
         if og_key.labels[4] == "e": # encoder; VIAL ONLY
@@ -237,6 +250,7 @@ def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:
             ml_count = ml_ndx + 1
 
         key.labels[7] = og_key.labels[7] # Name of multilayout
+        key.labels[6] = og_key.labels[6] # Name of multi-multilayout
         key.labels[8] = f"{ml_ndx},{ml_val}"
 
         if not ml_ndx in ml_dict.keys():
@@ -253,13 +267,18 @@ def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:
         # Update multilayouts
         if len(ml_dict[ml_ndx]) == 2 and ml_name and not via_ml[ml_ndx]:
             via_ml[ml_ndx] = ml_name
-        if len(ml_dict[ml_ndx]) > 2 and ml_name:
+        if len(ml_dict[ml_ndx]) > 2 and (ml_name or key.labels[6]): # More than 2 multilayouts
             if not via_ml[ml_ndx]:
-                via_ml[ml_ndx] = [""] * len(ml_dict[ml_ndx])
-            via_ml[ml_ndx][ml_val] = ml_name 
-    
+                via_ml[ml_ndx] = [""] * (len(ml_dict[ml_ndx]) + 1)
+            if not via_ml[ml_ndx][0]: # multilayout name
+                via_ml[ml_ndx][0] = ml_name
+            via_ml[ml_ndx][ml_val+1] = key.labels[6]
+
     if None in via_ml:
         raise Exception # there is multilayout option which is missing at least one name/tag
+
+    # Remove metadata
+    via_kbd.meta = KeyboardMetadata()
 
     keymap_all = serialize(via_kbd)
 
@@ -280,7 +299,7 @@ def kbd_to_via(kbd: Keyboard, product_id:str=None, vendor_id:str=None, lighting:
 
     return via_dict
 
-def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, product_id:str=None, vendor_id:str=None, lighting:str=None, name:str=None) -> dict:
+def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id:str=None, lighting:str=None, name:str=None) -> dict:
     if not lighting:
         lighting = 'none'
     if not name:
@@ -301,6 +320,7 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, product_id:str=None, vendor_id
     
     for key in vial_kbd.keys:
         og_key = deepcopy(key)
+        key.color = "#cccccc"
         key.labels = [None] * 12 # Empty labels
 
         if og_key.labels[4] == "e": # encoder; VIAL ONLY
@@ -348,6 +368,7 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, product_id:str=None, vendor_id
             ml_count = ml_ndx + 1
 
         key.labels[7] = og_key.labels[7] # Name of multilayout
+        key.labels[6] = og_key.labels[6] # Name of multi-multilayout
         key.labels[8] = f"{ml_ndx},{ml_val}"
 
         if not ml_ndx in ml_dict.keys():
@@ -364,15 +385,22 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, product_id:str=None, vendor_id
         # Update multilayouts
         if len(ml_dict[ml_ndx]) == 2 and ml_name and not vial_ml[ml_ndx]:
             vial_ml[ml_ndx] = ml_name
-        if len(ml_dict[ml_ndx]) > 2 and ml_name:
+        if len(ml_dict[ml_ndx]) > 2 and (ml_name or key.labels[6]): # More than 2 multilayouts
             if not vial_ml[ml_ndx]:
-                vial_ml[ml_ndx] = [""] * len(ml_dict[ml_ndx])
-            vial_ml[ml_ndx][ml_val] = ml_name 
+                vial_ml[ml_ndx] = [""] * (len(ml_dict[ml_ndx]) + 1)
+            if not vial_ml[ml_ndx][0]: # multilayout name
+                vial_ml[ml_ndx][0] = ml_name
+            vial_ml[ml_ndx][ml_val+1] = key.labels[6]
     
     if None in vial_ml:
         raise Exception # there is multilayout option which is missing at least one name/tag
 
+    # Remove metadata
+    vial_kbd.meta = KeyboardMetadata()
+
     keymap_all = serialize(vial_kbd)
+    
+    # write_file("test-vial.json", json.dumps(keymap_all, ensure_ascii=False, indent=2))
 
     vial_dict = {
         "name": name,
@@ -396,8 +424,10 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, product_id:str=None, vendor_id
     if not product_id:
         del vial_dict["productId"]
 
+    # Generation of config.h file
     config_h = "/* SPDX-License-Identifier: GPL-2.0-or-later */\n\n#pragma once"
-    config_h += f"\n\n{vial_uid}"
+    if vial_uid:
+        config_h += f"\n\n{vial_uid}"
     if vial_unlock_rows and vial_unlock_cols:
         u_rows = ', '.join([str(r) for r in vial_unlock_rows])
         u_cols = ', '.join([str(c) for c in vial_unlock_cols])

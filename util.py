@@ -1,3 +1,4 @@
+from functools import cmp_to_key
 from dataclasses import dataclass, field as dcf
 from typing import Optional, List, Callable
 import secrets
@@ -92,6 +93,15 @@ def min_x_y(keys: list) -> float:
 
     return min_x, min_y
 
+def sort_keys(keys:list):
+    def func(a, b):
+        return ((a.rotation_angle+360)%360 - (a.rotation_angle+360)%360 or 
+        (a.rotation_x - b.rotation_x) or
+        (a.rotation_y - b.rotation_y) or
+        (a.y - b.y) or
+        (a.x - b.x))
+
+    keys.sort(key=cmp_to_key(func))
 
 def read_file(path: str):
     with open(path, 'r', encoding='utf-8') as file:
