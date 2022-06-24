@@ -83,6 +83,8 @@ I plan on creating this soon. However, you can compile firmware without this thr
 # Demonstration of how easy it is to generate the input KLE
 The input KLE guidelines are designed as such to make inputting values really quick and simple straight in the KLE web interface.
 
+> **NOTE: This example is slightly outdated. I will create updated docs soon, follow specifications laid out in Guidelines section for up to date guidelines.**
+
 Let's say you want to add Multi-layout.
 
 You start with this:
@@ -126,6 +128,6 @@ Maybes:
 - be able to output things useful in blender (for the renderers)
 
 # Usage
- Modify the code as required in `run.py` and run it.
+ Modify the code as required in `run.py` and run it. Or use [the website](https://zykrah.me/).
  
- I plan to turn this into a script usable on a website or something that can be ran in command line eventually.
+ ~~I plan to turn this into a script usable on a website or something that can be ran in command line eventually.~~ DONE
