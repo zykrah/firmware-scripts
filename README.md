@@ -117,7 +117,7 @@ I also plan on soon implementing some code to convert from VIA -> KLE, VIA -> in
 WIP:
 - be able to re-configure the "guidelines"/labels as you wish
 - ~~the info.json stuff mentioned above~~
-- generate layout macro (kb.h) and keymap.c
+- ~~generate layout macro (kb.h) and keymap.c~~ DONE on the website
 - more conversions
 - generate more firmware files (e.g. kb.c rgb stuff, main config.h file, rules.mk file, maybe even kicad projects?)
 
