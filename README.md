@@ -40,7 +40,7 @@ The script automatically generates a `via.json`.
 You just need to set a vendor id, product id, and lighting manually.
 The rows, cols, keymap and even multilayout labels are automatically set.
 
-Example of the initial board being converted:
+Example of the initial board being converted (this image is slightly outdated):
 
 ![image](https://user-images.githubusercontent.com/23428162/168476979-1143ec2b-9967-4b91-9240-816fe28cd861.png)
 
@@ -78,12 +78,12 @@ Below is what the `LAYOUT_ALL` looks like (represented in KLE). You can see how 
 > NOTE: I haven't tested this with more complex multilayouts or larger boards.
 
 # LAYOUT macro (in kb.h file)
-I plan on creating this soon. However, you can compile firmware without this through the use of the info.json and the matrix labels.
+~~I plan on creating this soon. However, you can compile firmware without this through the use of the info.json and the matrix labels.~~ DONE. While the functionality hasn't been published to this repo, it appears on the website. This conversion directly reflects what QMK generates when you use `info.json` and the `matrix` labels. This can be **useful for creating/visualizing your keymap**.
 
 # Demonstration of how easy it is to generate the input KLE
 The input KLE guidelines are designed as such to make inputting values really quick and simple straight in the KLE web interface.
 
-> **NOTE: This example is slightly outdated. I will create updated docs soon, follow specifications laid out in Guidelines section for up to date guidelines.**
+> **NOTE: This example is slightly **outdated**. I will create updated docs soon, follow specifications laid out in Guidelines section for up to date guidelines.**
 
 Let's say you want to add Multi-layout.
 
@@ -104,7 +104,8 @@ And then do the same for the keys which would have a multilayout value of 1, 2 a
 ![image](https://user-images.githubusercontent.com/23428162/168477497-c221ceeb-a596-455b-b9f1-6c0b8eecfcc3.png)
 
 Then as long as you have a name/label set for the multilayout in at least one of the keys for any given multilayout option, everything will automatically generate.
-For instance, here's the output labels section in the `via.json`:
+For instance, here's the output labels section in the `via.json` (this example is slightly outdated):
+
 ![image](https://user-images.githubusercontent.com/23428162/168477554-c910f3b2-a9a9-4ae6-bbb1-97242160f18f.png)
 
 **You can probably see how the same process would apply to the switch matrix (adding/modifying the rows and columns).**
@@ -123,11 +124,11 @@ WIP:
 
 Maybes:
 - automatically detect/generate matrix from just a KLE
-- be able to input a kicad project/pcb? automatically detect everything from the matrix, switch positions, etc?
+- be able to input a kicad project/pcb? automatically detect everything from the matrix, switch positions, etc? UPDATE: See [here](https://github.com/zykrah/kicad-kle-placer) for a kicad switch placer plugin.
 - be able to generate a kicad project
 - be able to output things useful in blender (for the renderers)
 
 # Usage
- Modify the code as required in `run.py` and run it. Or use [the website](https://zykrah.me/).
+ Use [the website](https://zykrah.me/). OR if you still intend on using the code from this repo (it's outdated), modify the code as required in `run.py` and run it.
  
  ~~I plan to turn this into a script usable on a website or something that can be ran in command line eventually.~~ DONE
