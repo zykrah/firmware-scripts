@@ -26,6 +26,7 @@ The idea is to then follow the following guidelines to be able to output various
 - 11: Col
 
 > The name of the board can also be edited in KLE
+> You can use CTRL+Click to select multiple keys at once, this saves a lot of time when creating the layout.
 
 Example of the initial board being converted as per above guidelines:
 
