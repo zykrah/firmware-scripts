@@ -1,9 +1,15 @@
-# firmware-scripts
-**UPDATE: There is now a website for this. [Click me!](https://zykrah.me/)**
+# Firmware 'scripts'
+**UPDATE: There is now a website for this. [Click me!](https://zykrah.me/).** This repository acts mainly as documentation. Please read through it.
+
+![image](https://user-images.githubusercontent.com/23428162/194707201-99dbab42-5239-49ad-9d80-84f04316c726.png)
 
 Python scripts to make writing firmware faster/easier. The idea of the script/s is to remove the need to manually write a lot of the boring/repetitve/time-consuming firmware stuff.
 
-Disclaimer: The script utilizes some code from other places like [pykle_serial](https://github.com/hajimen/pykle_serial) (for the deserializer code) and some small util scripts from [vial-qmk](https://github.com/vial-kb/vial-qmk/blob/vial/util/vial_generate_keyboard_uid.py) (for the uid generation) and [qmk_firmware](https://github.com/qmk/qmk_firmware/blob/master/lib/python/qmk/json_encoders.py) (for the json encoders; to match the official qmk info.json formatting). I translated the serialization code from [kle-serial](https://github.com/ijprest/keyboard-layout-editor/blob/master/serial.js) myself. The rest of the scripts to actually convert from the deserialized layout to the other firmware files is done by me.
+Basic demonstration on how quick it is (placing this at the beginning because it seems some people are missing the point of the script):
+
+https://user-images.githubusercontent.com/23428162/194706855-201f43f8-fdc8-446c-abba-55e9742c7588.mp4
+
+> Disclaimer: The script utilizes some code from other places like [pykle_serial](https://github.com/hajimen/pykle_serial) (for the deserializer code) and some small util scripts from [vial-qmk](https://github.com/vial-kb/vial-qmk/blob/vial/util/vial_generate_keyboard_uid.py) (for the uid generation) and [qmk_firmware](https://github.com/qmk/qmk_firmware/blob/master/lib/python/qmk/json_encoders.py) (for the json encoders; to match the official qmk info.json formatting). I translated the serialization code from [kle-serial](https://github.com/ijprest/keyboard-layout-editor/blob/master/serial.js) myself. The rest of the scripts to actually convert from the deserialized layout to the other firmware files is done by me.
 
 Realistcally you can use just the serialization and deserialization code to write your own scripts in python too. What I've coded are just examples/what I think is useful to me.
 
@@ -16,6 +22,7 @@ The idea is to then follow the following guidelines to be able to output various
 # Guidelines:
 ![image](https://user-images.githubusercontent.com/23428162/168476640-09a4b226-8364-4fc1-833d-9fd1efac6a04.png)
 - 0:  (QMK info.json only) If there is text here, it is included as the "label" in the info.json
+- 1:  (For keymap.c) QMK Keycodes go here for layer 0 of the keymap.c, if nothing is included keys default to `KC_TRNS`
 - 2:  (VIAL only) If there is a 'u' here, the key is included as a key for the unlock combo 
 - 3:  Multilayout index
 - 4:  (VIAL only) If there is an 'e' here, the key is an encoder
@@ -56,6 +63,15 @@ Example of the initial board being converted:
 
 
 # QMK info.json file
+
+**UPDATE: As on the website, you can now define certain things and it will add various configuration options to the info.json. e.g. MCU presets (currently there's just RP2040 and 32U4).**
+
+![image](https://user-images.githubusercontent.com/23428162/194707307-b2602525-1038-4d2e-9990-cdfd4140324f.png)
+
+![image](https://user-images.githubusercontent.com/23428162/194707291-e9a8b5d4-0a35-4835-aa2b-34612637e298.png)
+
+![image](https://user-images.githubusercontent.com/23428162/194707400-353325d1-40ba-4501-a62b-5f0d9918ac13.png)
+
 The script also automatically generates an `info.json`.
 Matrix labels are automatically added.
 Key labels/names are automatically added if applicable.
@@ -77,38 +93,18 @@ Below is what the `LAYOUT_ALL` looks like (represented in KLE). You can see how 
 
 > NOTE: I haven't tested this with more complex multilayouts or larger boards.
 
+# KEYMAP.C
+
+Use label `1` to set QMK keycodes for the keymap. Currently only applies to layer 0. Keys without this label will default to `KC_TRNS`. The script splits the lines by rows, but it's up to you to do the rest of the formatting. (Planning on improving this later)
+
+![image](https://user-images.githubusercontent.com/23428162/194707078-5e48a970-c7c0-4ddc-86b5-41b8785d11d2.png)
+
+
 # LAYOUT macro (in kb.h file)
 ~~I plan on creating this soon. However, you can compile firmware without this through the use of the info.json and the matrix labels.~~ DONE. While the functionality hasn't been published to this repo, it appears on the website. This conversion directly reflects what QMK generates when you use `info.json` and the `matrix` labels. This can be **useful for creating/visualizing your keymap**.
 
-# Demonstration of how easy it is to generate the input KLE
-The input KLE guidelines are designed as such to make inputting values really quick and simple straight in the KLE web interface.
+![image](https://user-images.githubusercontent.com/23428162/194707361-32adabbc-d5c0-460f-b22f-c65cf43d3c7e.png)
 
-> **NOTE: This example is slightly **outdated**. I will create updated docs soon, follow specifications laid out in Guidelines section for up to date guidelines.**
-
-Let's say you want to add Multi-layout.
-
-You start with this:
-![image](https://user-images.githubusercontent.com/23428162/168477382-3782ad2d-59ef-40f7-82d4-ae3754207c0b.png)
-
-All you need to do is select the keys that belong to a specific multilayout index first and add the index to the right spot:
-![image](https://user-images.githubusercontent.com/23428162/168477400-23977151-1f0e-4adf-b2fc-42d54fa3c7af.png)
-
-Then repeat for all the other multilayout options (I refer to it as different multilayout indices):
-![image](https://user-images.githubusercontent.com/23428162/168477416-c4e5ce77-489a-4ec3-8648-2bcc0c72e5b9.png)
-
-Then you can just select all the default multilayout keys and set them to multilayout value 0:
-![image](https://user-images.githubusercontent.com/23428162/168477462-5e30bafa-879a-4a8d-b420-7923a8959a0c.png)
-
-And then do the same for the keys which would have a multilayout value of 1, 2 and so on...:
-![image](https://user-images.githubusercontent.com/23428162/168477476-ac12624a-0947-4b64-9ff1-82c7d7136516.png)
-![image](https://user-images.githubusercontent.com/23428162/168477497-c221ceeb-a596-455b-b9f1-6c0b8eecfcc3.png)
-
-Then as long as you have a name/label set for the multilayout in at least one of the keys for any given multilayout option, everything will automatically generate.
-For instance, here's the output labels section in the `via.json` (this example is slightly outdated):
-
-![image](https://user-images.githubusercontent.com/23428162/168477554-c910f3b2-a9a9-4ae6-bbb1-97242160f18f.png)
-
-**You can probably see how the same process would apply to the switch matrix (adding/modifying the rows and columns).**
 
 # Extra
 I plan on further improving the scripts, and also adding more features.
@@ -120,7 +116,7 @@ WIP:
 - ~~the info.json stuff mentioned above~~
 - ~~generate layout macro (kb.h) and keymap.c~~ DONE on the website
 - more conversions
-- generate more firmware files (e.g. kb.c rgb stuff, main config.h file, rules.mk file, maybe even kicad projects?)
+- generate more firmware files (e.g. kb.c rgb stuff, ~~main config.h file~~, rules.mk file, maybe even kicad projects?)
 
 Maybes:
 - automatically detect/generate matrix from just a KLE
