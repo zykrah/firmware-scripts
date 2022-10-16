@@ -1,0 +1,62 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/form.css"/>
+</head>
+<body>
+
+
+<section>
+    <div class="file_input_form form-style-1">
+        <h1>Firmware Script by Zykrah</h1>
+        <p><b>NOTE: THE MAIN POINT OF THIS SCRIPT IS THAT YOU CAN EASILY <u>MASS-LABEL KEYS</u> IN KLE.</b> View information about how to configure your KLE <a href="https://github.com/zykrah/firmware-scripts">here</a>.</p>
+        <form action="/" method = "POST" enctype="multipart/form-data" accept=".json">
+            <!-- <p>KLE: <input type = "text" name = "kle-text" /></p> -->
+            <div class = "file_input">Upload KLE (Optional if pasting raw data below): 
+                <label for="file-upload" class="custom-file-upload">
+                    Upload a file (.json)...
+                </label>
+                <input id="file-upload" type="file" name = "file" enctype="multipart/form-data" value="{{ request.files['file'] or '' }}">
+                <script>
+                    $('#file-upload').change(function() {
+                        var i = $(this).prev('label').clone();
+                        var file = $('#file-upload')[0].files[0].name;
+                        $(this).prev('label').text(file);
+                    });
+                </script>
+            </div>
+            <p>KLE Raw Data (Optional if uploading file above): <textarea name = "kle-raw">{{ request.form['kle-raw'] }}</textarea></p>
+            <p>Board Name (Optional): <input type = "text" name = "board-name" value="{{ request.form['board-name'] or 'Keyboard'}}"/></p>
+            <p>Maintainer (Optional): <input type = "text" name = "maintainer" value="{{ request.form['maintainer'] or 'qmk'}}"/></p>
+            <p>URL (Optional): <input type = "text" name = "url" value="{{ request.form['url'] }}"/></p>
+            <p>Vendor ID (Change as required): <input type = "text" name = "vendor-id" value="{{ request.form['vendor-id'] or '0xFEED'}}"/></p>
+            <p>Product ID (Change as required): <input type = "text" name = "product-id" value="{{ request.form['product-id'] or '0x0001'}}"/></p>
+            <p>Device Version: <input type = "text" name = "device-ver" value="{{ request.form['device-ver'] or '0.0.1'}}"/></p>
+            <p>VIA Lighting (Optional): <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
+            <p>MCU Preset (Optional): <select name="mcu-preset" method="GET">
+                {% for preset in mcu_presets %}
+                    <option value="{{preset}}" {% if mcu_choice == preset %} selected {% endif %} >{{preset}}</option>"
+                {% endfor %}
+            </select></p>
+            <p><input class = "submit" type = "submit" value = "Submit" /></p>
+        </form>
+    </div>
+    
+    <div class="file_output_form form-style-1">
+        <li style="width: 100%;">Outputs:</li>
+        <form action="/" method = "GET">
+            <div><u>QMK info.json</u> (this goes in main keyboard folder): <textarea class = "qmk_info_json_output" style="background-color: #f3f3f3;" readonly>{{qmk_info_json or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>VIAL vial.json</u> (this goes in `keymaps/vial/`, or you can use it for VIA): <textarea class = "vial_json_output" style="background-color: #f3f3f3;" readonly>{{vial_json or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>VIAL config.h</u> (this goes in `keymaps/vial/`): <textarea class = "vial_config_h_output" style="background-color: #f3f3f3;" readonly>{{vial_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>Main keyboard config.h</u> (this goes in main keyboard folder, <b>set the pins manually</b>, then you can add more to this file): <textarea class = "main_config_h_output" style="background-color: #f3f3f3;" readonly>{{main_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>keymap.c file</u> (this goes in all your folders inside `keymaps/`): <textarea class = "keymap_output" style="background-color: #f3f3f3;" readonly>{{keymap or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>kb.h file</u> (<b>NOT required</b> if using the output info.json, this is just for reference): <textarea class = "keyboard_h_output" style="background-color: #f3f3f3;" readonly>{{keyboard_h or "Upload or Paste a valid KLE..."}}</textarea></div>
+        </form>
+    </div>
+</section>
+
+
+</body>
+</html>

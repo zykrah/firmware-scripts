@@ -102,6 +102,18 @@ class InfoJSONEncoder(QMKJSONEncoder):
             elif key == 'maintainer':
                 return '12maintainer'
 
+            elif key == 'processor':
+                return '13processor'
+
+            elif key == 'bootloader':
+                return '14bootloader'
+
+            elif key == 'usb':
+                return '15usb'
+
+            elif key == 'features':
+                return '16bootloader'
+
             elif key == 'community_layouts':
                 return '97community_layouts'
 
@@ -113,6 +125,17 @@ class InfoJSONEncoder(QMKJSONEncoder):
 
             else:
                 return '50' + str(key)
+
+        # Sorting USB
+        elif self.indentation_level == 2:
+            if key == 'vid':
+                return '10vid'
+
+            elif key == 'pid':
+                return '11pid'
+
+            elif key == 'device_ver':
+                return '12device_ver'
 
         return key
 

@@ -74,10 +74,10 @@ def max_x_y(keys: list) -> float:
     max_y: float = -1
 
     for key in keys:
-        if key.x > max_x:
-            max_x = key.x
-        if key.y > max_y:
-            max_y = key.y
+        if (key.x + key.width) > max_x:
+            max_x = key.x + key.width
+        if (key.y + key.height) > max_y:
+            max_y = key.y + key.height
 
     return max_x, max_y
 
@@ -102,6 +102,11 @@ def sort_keys(keys:list):
         (a.x - b.x))
 
     keys.sort(key=cmp_to_key(func))
+
+def replace_chars(str:str, start:int, stop:int, new):
+    """Replace characters in a string based on the start and stop character indices.
+    """
+    return str.replace(str[start:stop], new)
 
 def read_file(path: str):
     with open(path, 'r', encoding='utf-8') as file:
