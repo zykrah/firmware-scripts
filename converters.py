@@ -110,8 +110,8 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
             key.y += ml_y_offset
 
             if key.rotation_angle:
-                key.rotation_x -= x_offset
-                key.rotation_y -= y_offset
+                key.rotation_x -= ml_x_offset
+                key.rotation_y -= ml_y_offset
 
         # Add the key to the final list
         qmk_keys.append(key)
@@ -599,8 +599,8 @@ def kbd_to_layout_macro(kbd: Keyboard) -> str:
             key.y += ml_y_offset
 
             if key.rotation_angle:
-                key.rotation_x -= x_offset
-                key.rotation_y -= y_offset
+                key.rotation_x -= ml_x_offset
+                key.rotation_y -= ml_y_offset
 
         # Add the key to the final list
         qmk_keys.append(key)
@@ -758,8 +758,8 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4) -> str:
             key.y += ml_y_offset
 
             if key.rotation_angle:
-                key.rotation_x -= x_offset
-                key.rotation_y -= y_offset
+                key.rotation_x -= ml_x_offset
+                key.rotation_y -= ml_y_offset
 
         # Add the key to the final list
         qmk_keys.append(key)
