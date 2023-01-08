@@ -1,7 +1,6 @@
 #Package import
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
-from deserialize import deserialize
-from serialize import serialize
+from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid
 from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_via, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config
 import json

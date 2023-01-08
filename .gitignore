@@ -1,5 +1,8 @@
 *.h
 *.json
+*.old
 __pycache__
 flaskapp.service
 flask.ini
+Untitled-1.py
+templates/output.html
