@@ -311,13 +311,16 @@ def deserialize_error(msg, data):
     raise ValueError("Error: " + msg + ":\n  " + json.dumps(data) if data is not None else "")
 
 def reorder_labels_in(labels, align, filler=None, skipdefault=False):
-    ret = []
+    if filler is not None:
+        ret = [filler, ] * 12 # Mainly for key labels
+    else:
+        ret = []
     for i in range(1, len(labels)) if skipdefault else range(len(labels)):
         lm = LABEL_MAP[align][i]
         if lm == -1:
             continue
         lbl = labels[i]
-        set_ndx(ret, lm, lbl, filler)
+        set_ndx(ret, lm, lbl)
     return ret
 
 def deserialize(rows):
