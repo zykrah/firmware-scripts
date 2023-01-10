@@ -34,7 +34,7 @@
             <p>Vendor ID (Change as required): <input type = "text" name = "vendor-id" value="{{ request.form['vendor-id'] or '0xFEED'}}"/></p>
             <p>Product ID (Change as required): <input type = "text" name = "product-id" value="{{ request.form['product-id'] or '0x0001'}}"/></p>
             <p>Device Version: <input type = "text" name = "device-ver" value="{{ request.form['device-ver'] or '0.0.1'}}"/></p>
-            <p>VIA Lighting (Optional): <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
+            <p>VIA Lighting (Optional) NOTE: this property is no longer supported as of VIA v3: <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
             <p>MCU Preset (Optional): <select name="mcu-preset" method="GET">
                 {% for preset in mcu_presets %}
                     <option value="{{preset}}" {% if mcu_choice == preset %} selected {% endif %} >{{preset}}</option>"
@@ -48,7 +48,7 @@
         <li style="width: 100%;">Outputs:</li>
         <form action="/" method = "GET">
             <div><u>QMK info.json</u> (this goes in main keyboard folder): <textarea class = "qmk_info_json_output" style="background-color: #f3f3f3;" readonly>{{qmk_info_json or "Upload or Paste a valid KLE..."}}</textarea></div>
-            <div><u>VIAL vial.json</u> (this goes in `keymaps/vial/`, or you can use it for VIA): <textarea class = "vial_json_output" style="background-color: #f3f3f3;" readonly>{{vial_json or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>VIAL vial.json</u> (this goes in `keymaps/vial/`, NOTE: the lighting property is no longer supported as of VIA v3): <textarea class = "vial_json_output" style="background-color: #f3f3f3;" readonly>{{vial_json or "Upload or Paste a valid KLE..."}}</textarea></div>
             <div><u>VIAL config.h</u> (this goes in `keymaps/vial/`): <textarea class = "vial_config_h_output" style="background-color: #f3f3f3;" readonly>{{vial_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
             <div><u>Main keyboard config.h</u> (this goes in main keyboard folder, <b>set the pins manually</b>, then you can add more to this file): <textarea class = "main_config_h_output" style="background-color: #f3f3f3;" readonly>{{main_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
             <div><u>keymap.c file</u> (this goes in all your folders inside `keymaps/`): <textarea class = "keymap_output" style="background-color: #f3f3f3;" readonly>{{keymap or "Upload or Paste a valid KLE..."}}</textarea></div>

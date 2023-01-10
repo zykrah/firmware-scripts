@@ -211,7 +211,7 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
         'maintainer': maintainer,
         #'usb': usb,
         'layouts': {
-            'LAYOUT_all': {
+            'LAYOUT': {
                 'layout': qmk_layout_all
             }
         }
@@ -450,7 +450,7 @@ def kbd_to_layout_macro(kbd: Keyboard) -> str:
     # This following code is based off qmk's generation.
     layouts_h_lines = []
 
-    layout_name = "LAYOUT_all"
+    layout_name = "LAYOUT"
     col_num = cols
     row_num = rows
 
@@ -499,7 +499,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1) -> str:
     # This following code is based off qmk's generation.
     keymap_lines = []
 
-    layout_name = "LAYOUT_all"
+    layout_name = "LAYOUT"
 
     keymap_keys = [[] for i in range(layers)]
     
