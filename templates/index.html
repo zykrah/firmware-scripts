@@ -40,7 +40,7 @@
                     <option value="{{preset}}" {% if mcu_choice == preset %} selected {% endif %} >{{preset}}</option>"
                 {% endfor %}
             </select></p>
-            <p>VIAL Layout File (.vil) (Optional: See documentation - KEYMAP.C): <input type = "text" name = "vil-file" value="{{ request.form['vil-file'] }}"/></p>
+            <p>VIAL Layout (.vil) OR VIA Layout (.json) File (Optional: See documentation - KEYMAP.C): <input type = "text" name = "vil-file" value="{{ request.form['vil-file'] }}"/></p>
             <p><input class = "submit" type = "submit" value = "Submit" /></p>
         </form>
     </div>

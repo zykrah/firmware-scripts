@@ -2,7 +2,7 @@
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid
-from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, vil_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
+from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
 import json
 import re
 import requests
@@ -108,8 +108,8 @@ def run_script():
 
             keyboard_h_content = kbd_to_layout_macro(keyboard)
 
-            layout_dict = vil_str_to_layout_dict(vil_file)
-            #keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md'))
+            layout_dict = layout_str_to_layout_dict(vil_file)
+            # keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
             link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
             keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
             conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))

@@ -1,6 +1,6 @@
 from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid
-from converters import kbd_to_qmk_info, kbd_to_vial, kbd_to_keymap, vil_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
+from converters import kbd_to_qmk_info, kbd_to_vial, kbd_to_keymap, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
 import json
 import requests
 
@@ -43,9 +43,10 @@ write_file(vial_config_h_path, vial_config_h)
 
 
 keymap_c_path = 'keymap.c'
-layout_dict = vil_str_to_layout_dict(read_file('vil.json'))
+layout_dict = layout_str_to_layout_dict(read_file('slime88.json'))
 link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
 keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
+# keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
 conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
 
 keymap_c_content = kbd_to_keymap(keyboard, 4, 1, layout_dict, keycodes_dict, conversion_dict)

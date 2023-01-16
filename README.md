@@ -119,15 +119,29 @@ Below is what the `LAYOUT_ALL` looks like (represented in KLE). You can see how 
 
 # KEYMAP.C
 
-Use label `1` to set QMK keycodes for the keymap. Currently only applies to layer 0. Keys without this label will default to `KC_TRNS`. The script splits the lines by rows, but it's up to you to do the rest of the formatting. (Planning on improving this later)
+You have two options for setting the default keycodes:
 
-UPDATE: Once you complete the firmware, you can set your keycodes in the VIAL GUI and then re-run the site using the output `.vil` VIAL Layout file, and it will automatically input the keycodes:
+1. Use label `1` to set QMK keycodes for the keymap. Currently only applies to layer 0. Keys without this label will default to `KC_TRNS`. The script splits the lines by rows, but it's up to you to do the rest of the formatting.
+
+2. **(NEW):** Once you complete the firmware, you can set your keycodes in the VIAL or VIA GUI and then re-run the site using the output `.vil` VIAL Layout file OR the `.json` VIA Layout file, and it will automatically input the keycodes. (See below examples):
+
+> DISCLAIMER: Some complex keycodes may have to be adjusted manually, particularly if using VIAL. This code generally only works for 4 layer boards (as of writing), you will have to modify the keyboard code manually if you want to use more/less layers (for now).
+
+In VIAL:
 
 ![image](https://user-images.githubusercontent.com/23428162/212656097-c5bea3c1-59cc-4942-8f8d-7494fae8a805.png)
 
 ![image](https://user-images.githubusercontent.com/23428162/212655169-137322fb-8eb9-496e-8d31-a4f64a54e7ba.png)
 
 ![image](https://user-images.githubusercontent.com/23428162/212655888-8cc69157-3393-49fb-b15b-2f215ca39305.png)
+
+OR in VIA:
+
+![image](https://user-images.githubusercontent.com/23428162/212670744-5b261d04-6d95-4937-860c-0750b252436b.png)
+
+![image](https://user-images.githubusercontent.com/23428162/212670806-7303fbdd-a70b-4c14-8d41-3b3513e26c95.png)
+
+Output:
 
 ![image](https://user-images.githubusercontent.com/23428162/212656060-2209f51d-acaf-4de3-a9e5-bd96d60e1bae.png)
 

@@ -528,9 +528,9 @@ def keycodes_md_to_keycode_dict(k_md:str) -> dict:
 
     return kc_dict
 
-def vil_str_to_layout_dict(string:str) -> dict:
+def layout_str_to_layout_dict(string:str) -> dict:
     obj = json.loads(string)
-    return obj["layout"]
+    return obj
 
 
 def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=None, keycode_dict:dict=None, conversion_dict:dict=None) -> str:
@@ -550,29 +550,43 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
 
     keymap_keys = [[] for i in range(layers)]
     
+    # Calculates total rows and cols
+    rows = 0
+    cols = 0
+    for key in kbd.keys:
+        row = int(key.labels[9])
+        col = int(key.labels[11])
+
+        if row + 1 > rows:
+            rows = row + 1
+        if col + 1 > cols:
+            cols = col + 1
+
     for i, layer_keys in enumerate(keymap_keys):
 
+        # Used to indicate when to newline
         current_y = 0
-        
-        for key in kbd.keys:
-            # use layout_dict if it exists
-            if layout_dict:
-                try:
-                    row = int(key.labels[9])
-                    col = int(key.labels[11])
-                    kc = layout_dict[i][row][col]
 
-                    if conversion_dict:
-                        if kc in conversion_dict.keys():
-                            kc = conversion_dict[kc]
+        for _, key in enumerate(kbd.keys):
+            
+            if layout_dict: # Check for layout_dict
+                if "layout" in layout_dict.keys():  # VIAL layout file
+                    try:
+                        row = int(key.labels[9])
+                        col = int(key.labels[11])
+                        kc = layout_dict["layout"][i][row][col]
+                    except IndexError:
+                        raise Exception('Invalid .vil file/layout dictionary provided')
 
-                    if keycode_dict:
-                        if kc in keycode_dict.keys():
-                            kc = keycode_dict[kc]
-                except IndexError:
-                    raise Exception('Invalid .vil file/layout dictionary provided')
+                elif "layers" in layout_dict.keys():  # VIA layout file
+                    try:
+                        row = int(key.labels[9])
+                        col = int(key.labels[11])
+                        kc = layout_dict["layers"][i][col + row*cols]
+                    except IndexError:
+                        raise Exception('Invalid VIA layout file provided')
 
-            else: # else default to label
+            else: # Default to label
                 if i == 0: # First layer
                     kc = key.labels[keycode_label_no] # Keycode
                     if not kc:
@@ -580,11 +594,21 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
                 else:
                     kc = 'KC_TRNS'
 
+            # Convert (VIALs) deprecated keycodes into updated ones if required
+            if conversion_dict:
+                if kc in conversion_dict.keys():
+                    kc = conversion_dict[kc]
+
+            # Convert lengthened keycodes into shortened aliases if required
+            if keycode_dict:
+                if kc in keycode_dict.keys():
+                    kc = keycode_dict[kc]
+
+            # Newline if the y value changes, just to make things neater
             if key.y != current_y:
                 current_y = key.y
                 layer_keys.append('\n\t\t')
             layer_keys.append(f'{kc},'.ljust(max_kc_len))
-
 
         #keymap_lines.append(f'#define ')
         #keymap_lines.append(f'\t[{i}] = {layout_name}(\n\t\t{"".join(layer_keys)}\n\t),\n\n')
