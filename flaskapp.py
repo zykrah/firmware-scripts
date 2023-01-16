@@ -2,9 +2,10 @@
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid
-from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config
+from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, vil_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
 import json
 import re
+import requests
 
 
 from json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
@@ -42,7 +43,7 @@ def run_script():
     product_id = form_data['product-id']
     device_ver = form_data['device-ver']
     mcu_choice = form_data.get('mcu-preset')
-
+    vil_file = form_data.get('vil-file')
 
     uploaded_file = request.files['file']
     if 'file' in request.files.keys():
@@ -107,7 +108,13 @@ def run_script():
 
             keyboard_h_content = kbd_to_layout_macro(keyboard)
 
-            keymap_content = kbd_to_keymap(keyboard)
+            layout_dict = vil_str_to_layout_dict(vil_file)
+            #keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md'))
+            link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
+            keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
+            conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
+
+            keymap_content = kbd_to_keymap(keyboard, 4, 1, layout_dict, keycodes_dict, conversion_dict)
 
             main_config_h_content = kbd_to_main_config(keyboard)
 

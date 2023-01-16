@@ -487,7 +487,53 @@ def kbd_to_layout_macro(kbd: Keyboard) -> str:
 
 # GENERATE KEYMAP
 
-def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1) -> str:
+def generate_keycode_conversion_dict(string:str) -> str:
+    """For updating deprecated keycodes that .vil files still uses"""
+    conversion_dict = {}
+    for line in string.split("\n"):
+        split_line = line.split()
+        if not split_line:
+            continue
+        conversion_dict[split_line[0]] = split_line[1]
+    return conversion_dict
+
+def keycodes_md_to_keycode_dict(k_md:str) -> dict:
+    kc_dict = {}
+
+    lines = k_md.split('\n')
+    for line in lines:
+        split_line = line.split('|')
+
+        if len(split_line) <= 3:
+            continue
+
+        key = split_line[1].strip()
+        aliases = split_line[2].strip()
+
+        if not (key.startswith('`') and key.endswith('`')):
+            continue
+
+        if not (aliases.startswith('`') and aliases.endswith('`')):
+            continue
+
+        key = key.strip('`')
+
+        aliases_split = aliases.split(', ')
+        #if aliases_split > 1:
+        alias = aliases_split[0].strip('`')
+
+        #print(key, alias)
+
+        kc_dict[key] = alias
+
+    return kc_dict
+
+def vil_str_to_layout_dict(string:str) -> dict:
+    obj = json.loads(string)
+    return obj["layout"]
+
+
+def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=None, keycode_dict:dict=None, conversion_dict:dict=None) -> str:
     """Generates a keymap.c file"""
     # Removes all multilayout options except max layouts.
     # For parity with info.json and keymap.c
@@ -500,6 +546,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1) -> str:
     keymap_lines = []
 
     layout_name = "LAYOUT"
+    max_kc_len = 9
 
     keymap_keys = [[] for i in range(layers)]
     
@@ -508,21 +555,40 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1) -> str:
         current_y = 0
         
         for key in kbd.keys:
-            if i == 0: # First layer
-                kc = key.labels[keycode_label_no] # Keycode
-                if not kc:
+            # use layout_dict if it exists
+            if layout_dict:
+                try:
+                    row = int(key.labels[9])
+                    col = int(key.labels[11])
+                    kc = layout_dict[i][row][col]
+
+                    if conversion_dict:
+                        if kc in conversion_dict.keys():
+                            kc = conversion_dict[kc]
+
+                    if keycode_dict:
+                        if kc in keycode_dict.keys():
+                            kc = keycode_dict[kc]
+                except IndexError:
+                    raise Exception('Invalid .vil file/layout dictionary provided')
+
+            else: # else default to label
+                if i == 0: # First layer
+                    kc = key.labels[keycode_label_no] # Keycode
+                    if not kc:
+                        kc = 'KC_TRNS'
+                else:
                     kc = 'KC_TRNS'
-            else:
-                kc = 'KC_TRNS'
 
             if key.y != current_y:
                 current_y = key.y
-                layer_keys.append(f'\n\t\t{kc}')
-            else:        
-                layer_keys.append(kc)
+                layer_keys.append('\n\t\t')
+            layer_keys.append(f'{kc},'.ljust(max_kc_len))
+
 
         #keymap_lines.append(f'#define ')
-        keymap_lines.append('\t[%s] = %s(\n\t\t%s\n\t),\n\n' % (i, layout_name, ', '.join(layer_keys)))
+        #keymap_lines.append(f'\t[{i}] = {layout_name}(\n\t\t{"".join(layer_keys)}\n\t),\n\n')
+        keymap_lines.append('\t[{}] = {}(\n\t\t{}\n\t),\n\n'.format(i, layout_name, ''.join(layer_keys)))
 
     keymap_lines.append('};\n')
 
@@ -530,7 +596,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1) -> str:
     for line in keymap_lines:
         keymap_all += line
 
-    return keymap_all
+    return "\n".join([x.rstrip() for x in keymap_all.split("\n")])
 
 
 # GENERATE MAIN CONFIG.H

@@ -97,8 +97,15 @@ Below is what the `LAYOUT_ALL` looks like (represented in KLE). You can see how 
 
 Use label `1` to set QMK keycodes for the keymap. Currently only applies to layer 0. Keys without this label will default to `KC_TRNS`. The script splits the lines by rows, but it's up to you to do the rest of the formatting. (Planning on improving this later)
 
-![image](https://user-images.githubusercontent.com/23428162/194707078-5e48a970-c7c0-4ddc-86b5-41b8785d11d2.png)
+UPDATE: Once you complete the firmware, you can set your keycodes in the VIAL GUI and then re-run the site using the output `.vil` VIAL Layout file, and it will automatically input the keycodes:
 
+![image](https://user-images.githubusercontent.com/23428162/212656097-c5bea3c1-59cc-4942-8f8d-7494fae8a805.png)
+
+![image](https://user-images.githubusercontent.com/23428162/212655169-137322fb-8eb9-496e-8d31-a4f64a54e7ba.png)
+
+![image](https://user-images.githubusercontent.com/23428162/212655888-8cc69157-3393-49fb-b15b-2f215ca39305.png)
+
+![image](https://user-images.githubusercontent.com/23428162/212656060-2209f51d-acaf-4de3-a9e5-bd96d60e1bae.png)
 
 # LAYOUT macro (in kb.h file)
 ~~I plan on creating this soon. However, you can compile firmware without this through the use of the info.json and the matrix labels.~~ DONE. While the functionality hasn't been published to this repo, it appears on the website. This conversion directly reflects what QMK generates when you use `info.json` and the `matrix` labels. This can be **useful for creating/visualizing your keymap**.

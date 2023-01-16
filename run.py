@@ -1,7 +1,8 @@
 from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid
-from converters import kbd_to_qmk_info, kbd_to_vial
+from converters import kbd_to_qmk_info, kbd_to_vial, kbd_to_keymap, vil_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
 import json
+import requests
 
 from json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
 
@@ -37,3 +38,17 @@ vial_config_h_path = 'config.h'
 vial_json_content, vial_config_h = kbd_to_vial(keyboard, vial_uid, vial_vendor_id, vial_product_id)
 write_file(vial_json_path, json.dumps(vial_json_content, ensure_ascii=False, indent=2, cls=KLEJSONEncoder))
 write_file(vial_config_h_path, vial_config_h)
+
+#keyboard_h_content = kbd_to_layout_macro(keyboard)
+
+
+keymap_c_path = 'keymap.c'
+layout_dict = vil_str_to_layout_dict(read_file('vil.json'))
+link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
+keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
+conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
+
+keymap_c_content = kbd_to_keymap(keyboard, 4, 1, layout_dict, keycodes_dict, conversion_dict)
+write_file(keymap_c_path, keymap_c_content)
+
+#main_config_h_content = kbd_to_main_config(keyboard)
