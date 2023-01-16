@@ -125,7 +125,7 @@ You have two options for setting the default keycodes:
 
 2. **(NEW):** Once you complete the firmware, you can set your keycodes in the VIAL or VIA GUI and then re-run the site using the output `.vil` VIAL Layout file OR the `.json` VIA Layout file, and it will automatically input the keycodes. (See below examples):
 
-> DISCLAIMER: Some complex keycodes may have to be adjusted manually, particularly if using VIAL. This code generally only works for 4 layer boards (as of writing), you will have to modify the keyboard code manually if you want to use more/less layers (for now).
+> DISCLAIMER: Some complex keycodes may have to be adjusted manually, particularly if using VIAL.
 
 In VIAL:
 

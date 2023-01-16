@@ -1,4 +1,6 @@
 *.h
+*.c
+*.md
 *.json
 *.old
 __pycache__

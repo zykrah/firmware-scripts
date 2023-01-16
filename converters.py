@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from util import gen_uid, max_x_y, min_x_y, write_file, replace_chars
 import json
+from json import JSONDecodeError
 
 
 # GENERATE INFO.JSON
@@ -529,7 +530,10 @@ def keycodes_md_to_keycode_dict(k_md:str) -> dict:
     return kc_dict
 
 def layout_str_to_layout_dict(string:str) -> dict:
-    obj = json.loads(string)
+    try:
+        obj = json.loads(string)
+    except JSONDecodeError as e:
+        raise Exception(f'Invalid VIAL/VIA layout file input, {e}')
     return obj
 
 
@@ -571,20 +575,28 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
             
             if layout_dict: # Check for layout_dict
                 if "layout" in layout_dict.keys():  # VIAL layout file
-                    try:
-                        row = int(key.labels[9])
-                        col = int(key.labels[11])
-                        kc = layout_dict["layout"][i][row][col]
-                    except IndexError:
-                        raise Exception('Invalid .vil file/layout dictionary provided')
+                    vial_layout_dict = layout_dict["layout"]
+                    if i+1 > len(vial_layout_dict):
+                        kc = 'KC_TRNS'
+                    else:
+                        try:
+                            row = int(key.labels[9])
+                            col = int(key.labels[11])
+                            kc = vial_layout_dict[i][row][col]
+                        except IndexError:
+                            raise Exception('Invalid .vil file/layout dictionary provided')
 
                 elif "layers" in layout_dict.keys():  # VIA layout file
-                    try:
-                        row = int(key.labels[9])
-                        col = int(key.labels[11])
-                        kc = layout_dict["layers"][i][col + row*cols]
-                    except IndexError:
-                        raise Exception('Invalid VIA layout file provided')
+                    via_layout_dict = layout_dict["layers"]
+                    if i+1 > len(via_layout_dict):
+                        kc = 'KC_TRNS'
+                    else:
+                        try:
+                            row = int(key.labels[9])
+                            col = int(key.labels[11])
+                            kc = via_layout_dict[i][col + row*cols]
+                        except IndexError:
+                            raise Exception('Invalid VIA layout file provided')
 
             else: # Default to label
                 if i == 0: # First layer
@@ -625,7 +637,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
 
 # GENERATE MAIN CONFIG.H
 
-def kbd_to_main_config(kbd: Keyboard) -> str:
+def kbd_to_main_config(kbd: Keyboard, layers:int=4) -> str:
     rows = 0
     cols = 0
 
@@ -656,6 +668,11 @@ def kbd_to_main_config(kbd: Keyboard) -> str:
     config_lines.append('\n')
     config_lines.append('#define DIODE_DIRECTION %s' % ('COL2ROW'))
     config_lines.append('\n')
+
+    if layers != 4 and layers > 0 and layers <= 32:
+        config_lines.append('\n')
+        config_lines.append(f'#define DYNAMIC_KEYMAP_LAYER_COUNT {layers}')
+        config_lines.append('\n')
 
     config_all = "/* SPDX-License-Identifier: GPL-2.0-or-later */\n\n#pragma once\n\n#include \"config_common.h\"\n\n"
     for line in config_lines:

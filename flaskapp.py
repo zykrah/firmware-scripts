@@ -43,7 +43,11 @@ def run_script():
     product_id = form_data['product-id']
     device_ver = form_data['device-ver']
     mcu_choice = form_data.get('mcu-preset')
-    vil_file = form_data.get('vil-file')
+    try:
+        layers = int(form_data.get('layers'))
+    except ValueError as e:
+        raise Exception(f'Number of Layers needs to be an integer, {e}')
+    layout_file = form_data.get('layout-file')
 
     uploaded_file = request.files['file']
     if 'file' in request.files.keys():
@@ -108,15 +112,18 @@ def run_script():
 
             keyboard_h_content = kbd_to_layout_macro(keyboard)
 
-            layout_dict = layout_str_to_layout_dict(vil_file)
-            # keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
-            link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
-            keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
-            conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
+            if layout_file:
+                layout_dict = layout_str_to_layout_dict(layout_file)
+                # keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
+                link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
+                keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
+                conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
 
-            keymap_content = kbd_to_keymap(keyboard, 4, 1, layout_dict, keycodes_dict, conversion_dict)
+                keymap_content = kbd_to_keymap(keyboard, layers, 1, layout_dict, keycodes_dict, conversion_dict)
+            else:
+                keymap_content = kbd_to_keymap(keyboard, layers, 1)
 
-            main_config_h_content = kbd_to_main_config(keyboard)
+            main_config_h_content = kbd_to_main_config(keyboard, layers)
 
             print("Successfully completed compilation of a board!")
 
