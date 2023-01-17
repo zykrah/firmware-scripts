@@ -9,24 +9,28 @@ MCU_PRESETS = ['None', 'RP2040', '32U4', 'STM32']
 MCU_DICT = {
     'None' : {
         'mcu' : None,
+        'board': None,
         'bootloader': None,
         'output_pin_pref': None,
         'schem_pin_pref': None
     },
     'RP2040': {
         'mcu' : 'RP2040',
+        'board': None,
         'bootloader': 'rp2040',
         'output_pin_pref': 'GP',
         'schem_pin_pref': 'GPIO'
     },
     '32U4': {
         'mcu' : 'atmega32u4',
+        'board': None,
         'bootloader': 'atmel-dfu',
         'output_pin_pref': '',
         'schem_pin_pref': 'P'
     },
     'STM32': {
         'mcu' : 'STM32FXXX',
+        'board': 'stm32-dfu',
         'bootloader': 'GENERIC_STM_FXXX',
         'output_pin_pref': '',
         'schem_pin_pref': 'P'

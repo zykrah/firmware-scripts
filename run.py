@@ -42,6 +42,7 @@ except FileNotFoundError:
 mcu_dict = MCU_DICT[mcu_choice]
 mcu = mcu_dict['mcu']
 bootloader = mcu_dict['bootloader']
+board = mcu_dict['board']
 if netlist:
     output_pin_pref = mcu_dict['output_pin_pref']
     schem_pin_pref = mcu_dict['schem_pin_pref']
@@ -58,7 +59,7 @@ else:
     pin_dict = {}
 
 qmk_info_path = 'info.json'
-qmk_info_content = kbd_to_qmk_info(keyboard, name, maintainer, url, vid, pid, ver, mcu, bootloader, pin_dict, diode_dir)
+qmk_info_content = kbd_to_qmk_info(keyboard, name, maintainer, url, vid, pid, ver, mcu, bootloader, board, pin_dict, diode_dir)
 write_file(qmk_info_path, json.dumps(qmk_info_content, indent=4, separators=(', ', ': '), sort_keys=False, cls=InfoJSONEncoder))
 
 

@@ -150,7 +150,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
 
     return kbd
 
-def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=None, pid=None, ver=None, mcu=None, bootloader=None, pin_dict=None, diode_dir="COL2ROW") -> dict:
+def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=None, pid=None, ver=None, mcu=None, bootloader=None, board=None, pin_dict=None, diode_dir="COL2ROW") -> dict:
     """Converts a Keyboard into a QMK info.json (dict)"""
     # Removes all multilayout options except max layouts.
     kbd = get_layout_all(kbd)
@@ -241,6 +241,8 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
             'mousekey': True,
             'nkro': True
         }
+        if board:
+            keyboard["board"] = board
 
     if url:
         keyboard["url"] = url

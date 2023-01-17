@@ -80,6 +80,7 @@ def run_script():
 
             mcu_dict = MCU_DICT[mcu_choice]
             mcu = mcu_dict['mcu']
+            board = mcu_dict['board']
             bootloader = mcu_dict['bootloader']
             if netlist:
                 output_pin_pref = mcu_dict['output_pin_pref']
@@ -98,7 +99,7 @@ def run_script():
 
             # Generate a QMK info.json file used for QMK Configurator
             qmk_info_path = 'info.json'
-            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, pin_dict, diode_dir)
+            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, board, pin_dict, diode_dir)
             qmk_info_content = json.dumps(qmk_info_json, indent=4, separators=(', ', ': '), sort_keys=False, cls=InfoJSONEncoder)
             # write_file(qmk_info_path, qmk_info_content)
 

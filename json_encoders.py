@@ -108,11 +108,14 @@ class InfoJSONEncoder(QMKJSONEncoder):
             elif key == 'bootloader':
                 return '14bootloader'
 
+            elif key == 'board':
+                return '15board'
+
             elif key == 'usb':
-                return '15usb'
+                return '16usb'
 
             elif key == 'features':
-                return '16bootloader'
+                return '17features'
 
             elif key == 'community_layouts':
                 return '97community_layouts'
@@ -136,6 +139,12 @@ class InfoJSONEncoder(QMKJSONEncoder):
 
             elif key == 'device_ver':
                 return '12device_ver'
+
+            elif key == 'rows':
+                return '1rows'
+                
+            elif key == 'cols':
+                return '2col'
 
         return key
 
