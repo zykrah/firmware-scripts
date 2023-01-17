@@ -1,7 +1,7 @@
 #Package import
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 from serial import serialize, deserialize
-from util import read_file, write_file, gen_uid
+from util import read_file, write_file, gen_uid, MCU_PRESETS, MCU_DICT
 from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins
 import json
 import re
@@ -15,8 +15,6 @@ from json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py,
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
-
-MCU_PRESETS = ['None', 'RP2040', '32U4']
 
 #decorator for homepage 
 @app.route('/' )
@@ -48,33 +46,15 @@ def run_script():
     except ValueError as e:
         raise Exception(f'Number of Layers needs to be an integer, {e}')
     layout_file = form_data.get('layout-file')
-    #netlist = form_data.get('netlist')
 
     uploaded_file = request.files.get('file')
-    # if 'file' in request.files.keys():
-    #     uploaded_file = request.files['file']
-    # else:
-    #     uploaded_file = None
-    
-
-    #print(request.files.keys())
 
     uploaded_netlist = request.files.get('netlist')
-    # uploaded_netlist = request.files['netlist']
-    # if 'netlist' in request.files.keys():
-    #     uploaded_netlist = request.files['netlist']
-    # else:
-    #     uploaded_netlist = None
 
-
-    #print(uploaded_netlist)
     if uploaded_netlist:
         netlist = str(uploaded_netlist.read(), 'utf-8')
-        # content = uploaded_netlist.read()
-        # netlist = str(content, 'utf-8')
     else:
         netlist = None
-    #print(netlist)
 
     if uploaded_file or kle_raw:
         if uploaded_file:
@@ -83,11 +63,9 @@ def run_script():
         elif kle_raw:
             text = '[' + re.sub("(\w+):", r'"\1":',  kle_raw) + ']'
 
-
         try:
             # print(text)
             # write_file('test-text.json', text)
-
 
             # Deserialize json
             deserialized_path = 'deserialized.json'
@@ -100,21 +78,12 @@ def run_script():
 
             # MCU PRESET
 
-            if mcu_choice == 'RP2040':
-                mcu = 'RP2040'
-                bootloader = 'rp2040'
-                if netlist:
-                    output_pin_pref = "GP"
-                    schem_pin_pref = "GPIO"
-            elif mcu_choice == '32U4':
-                mcu = 'atmega32u4'
-                bootloader = 'atmel-dfu'
-                if netlist:
-                    output_pin_pref = ""
-                    schem_pin_pref = "P"
-            else:
-                mcu = None
-                bootloader = None
+            mcu_dict = MCU_DICT[mcu_choice]
+            mcu = mcu_dict['mcu']
+            bootloader = mcu_dict['bootloader']
+            if netlist:
+                output_pin_pref = mcu_dict['output_pin_pref']
+                schem_pin_pref = mcu_dict['schem_pin_pref']
 
             diode_dir = "COL2ROW"
             if mcu_choice != 'None' and netlist:

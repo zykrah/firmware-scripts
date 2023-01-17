@@ -4,6 +4,35 @@ from typing import Optional, List, Callable
 import secrets
 import re
 
+MCU_PRESETS = ['None', 'RP2040', '32U4', 'STM32']
+
+MCU_DICT = {
+    'None' : {
+        'mcu' : None,
+        'bootloader': None,
+        'output_pin_pref': None,
+        'schem_pin_pref': None
+    },
+    'RP2040': {
+        'mcu' : 'RP2040',
+        'bootloader': 'rp2040',
+        'output_pin_pref': 'GP',
+        'schem_pin_pref': 'GPIO'
+    },
+    '32U4': {
+        'mcu' : 'atmega32u4',
+        'bootloader': 'atmel-dfu',
+        'output_pin_pref': '',
+        'schem_pin_pref': 'P'
+    },
+    'STM32': {
+        'mcu' : 'STM32FXXX',
+        'bootloader': 'GENERIC_STM_FXXX',
+        'output_pin_pref': '',
+        'schem_pin_pref': 'P'
+    }
+}
+
 # Unused currently
 def replace_chars(str:str, start:int, stop:int, new):
     """Replace characters in a string based on the start and stop character indices.
@@ -69,6 +98,12 @@ def make_tree(data:str):
     return req(1)[0]
 
 def extract_matrix_pins(netlist:str, mcu:str="RP2040", output_pin_prefix:str="GP", schem_pin_prefix:str="GPIO") -> dict:
+    """Takes a KiCAD netlist file as a string (`netlist`) and spits out a dict with column and row pins in order.
+    `mcu` is used to search for the MCU component, based on component values.
+    `output_pin_prefix` is what the output pins should start with (e.g. `"GP"` for RP2040, and empty (`""`) for 32U4).
+    `schem_pin_prefix` is what the pins on the MCU symbol should start with (e.g. `"GPIO"` for RP2040 symbol from Sleep-Lib,
+    `"P"` for the KiCAD default 32u4 symbol)
+    """
     tree = make_tree(netlist)
     matrix_pins = {'cols': [], 'rows': []}
     mcu_comp = '' # MCU Component

@@ -658,36 +658,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
 # GENERATE MAIN CONFIG.H
 
 def kbd_to_main_config(kbd: Keyboard, layers:int=4) -> str:
-    # rows = 0
-    # cols = 0
-
-    # for key in kbd.keys:
-    #     row = int(key.labels[9]) # TO-DO: add errorcase
-    #     col = int(key.labels[11]) # TO-DO: add errorcase
-
-    #     if row + 1 > rows:
-    #         rows = row + 1
-    #     if col + 1 > cols:
-    #         cols = col + 1
-        
     config_lines = []
-
-    # config_lines.append('/* key matrix size */')
-    # config_lines.append('\n')
-    # config_lines.append('#define MATRIX_ROWS %s' % (rows))
-    # config_lines.append('\n')
-    # config_lines.append('#define MATRIX_COLS %s' % (cols))
-    # config_lines.append('\n\n')
-
-    # config_lines.append('#define MATRIX_ROW_PINS {%s}' % (','.join(['X'] * rows)) )
-    # config_lines.append('\n')
-    # config_lines.append('#define MATRIX_COL_PINS {%s}' % (','.join(['X'] * cols)) )
-    # config_lines.append('\n\n')
-
-    # config_lines.append('/* COL2ROW or ROW2COL */')
-    # config_lines.append('\n')
-    # config_lines.append('#define DIODE_DIRECTION %s' % ('COL2ROW'))
-    # config_lines.append('\n')
 
     if layers != 4 and layers > 0 and layers <= 32:
         #config_lines.append('\n')

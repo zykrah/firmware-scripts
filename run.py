@@ -1,12 +1,10 @@
 from serial import serialize, deserialize
-from util import read_file, write_file, gen_uid
+from util import read_file, write_file, gen_uid, MCU_DICT
 from converters import kbd_to_qmk_info, kbd_to_vial, kbd_to_keymap, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, kbd_to_main_config, extract_matrix_pins
 import json
 import requests
 
 from json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
-
-layers=4
 
 
 # Input an exported json of a KLE that follows the guide (See README.md)
@@ -33,17 +31,31 @@ url = ""
 vid = "0xFEED"
 pid = "0x0001"
 ver = "0.0.1"
-mcu = "RP2040"
-bootloader = "rp2040"
+layers=4
+mcu_choice = "RP2040" # choose from MCU_PRESETS
 
 try: # KiCAD Netlist (for pins)
     netlist = read_file('slime88.net')
 except FileNotFoundError:
     netlist = None
-output_pin_pref = "GP"
-schem_pin_pref = "GPIO"
-diode_dir = "COL2ROW"
-pin_dict = extract_matrix_pins(netlist, mcu, output_pin_pref, schem_pin_pref)
+
+mcu_dict = MCU_DICT[mcu_choice]
+mcu = mcu_dict['mcu']
+bootloader = mcu_dict['bootloader']
+if netlist:
+    output_pin_pref = mcu_dict['output_pin_pref']
+    schem_pin_pref = mcu_dict['schem_pin_pref']
+
+diode_dir = "COL2ROW" # default
+if mcu_choice != 'None' and netlist:
+    try:
+        pin_dict = extract_matrix_pins(netlist, mcu, output_pin_pref, schem_pin_pref)
+    except Exception as e:
+        raise Exception(f"Invalid netlist provided!, {e}")
+elif mcu_choice == 'None' and netlist:
+    raise Exception("You need to choose a MCU preset to utilise the netlist function!")
+else:
+    pin_dict = {}
 
 qmk_info_path = 'info.json'
 qmk_info_content = kbd_to_qmk_info(keyboard, name, maintainer, url, vid, pid, ver, mcu, bootloader, pin_dict, diode_dir)

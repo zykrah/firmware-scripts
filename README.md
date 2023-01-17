@@ -98,11 +98,13 @@ Example of the initial board being converted:
 
 # QMK info.json file
 
-**UPDATE: As on the website, you can now define certain things and it will add various configuration options to the info.json. e.g. MCU presets (currently there's just RP2040 and 32U4).**
+**UPDATE: As on the website, you can now define certain things and it will add various configuration options to the info.json. e.g. MCU presets (currently there's just RP2040, 32U4 and STM32).**
+
+> Note: You will have to manually set the specific STM32 model (e.g. `STM32F072`)
 
 ![image](https://user-images.githubusercontent.com/23428162/194707307-b2602525-1038-4d2e-9990-cdfd4140324f.png)
 
-![image](https://user-images.githubusercontent.com/23428162/194707291-e9a8b5d4-0a35-4835-aa2b-34612637e298.png)
+![image](https://user-images.githubusercontent.com/23428162/212888347-fe28c894-9c99-4948-96b0-725e391e2e8c.png)
 
 ![image](https://user-images.githubusercontent.com/23428162/194707400-353325d1-40ba-4501-a62b-5f0d9918ac13.png)
 
@@ -130,6 +132,8 @@ Below is what the `LAYOUT` looks like (represented in KLE). You can see how the 
 ## Kicad Netlist
 
 You can also use the output KiCAD Schematic Netlist file to fill in the `info.json` MCU pinout automatically. Otherwise, you will have to manually set the pins in the `info.json`
+
+Currently supports `RP2040` (tested with Sleepdealr's symbol), `32U4` and `STM32` (KiCAD defaults should work) as described in the below image. Columns and rows should be numbered with positive integers starting from `0`.
 
 See below example:
 
