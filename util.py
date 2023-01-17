@@ -30,8 +30,8 @@ MCU_DICT = {
     },
     'STM32': {
         'mcu' : 'STM32FXXX',
-        'board': 'stm32-dfu',
-        'bootloader': 'GENERIC_STM_FXXX',
+        'board': 'GENERIC_STM_FXXX',
+        'bootloader': 'stm32-dfu',
         'output_pin_pref': '',
         'schem_pin_pref': 'P'
     }
