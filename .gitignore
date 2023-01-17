@@ -3,6 +3,7 @@
 *.md
 *.json
 *.old
+*.net
 __pycache__
 flaskapp.service
 flask.ini

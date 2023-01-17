@@ -2,7 +2,7 @@ from copy import deepcopy
 from serial import Keyboard, KeyboardMetadata, serialize, deserialize, sort_keys
 from collections import OrderedDict
 
-from util import gen_uid, max_x_y, min_x_y, write_file, replace_chars
+from util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
 import json
 from json import JSONDecodeError
 
@@ -150,10 +150,22 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
 
     return kbd
 
-def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=None, pid=None, ver=None, mcu=None, bootloader=None) -> dict:
+def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=None, pid=None, ver=None, mcu=None, bootloader=None, pin_dict=None, diode_dir="COL2ROW") -> dict:
     """Converts a Keyboard into a QMK info.json (dict)"""
     # Removes all multilayout options except max layouts.
     kbd = get_layout_all(kbd)
+
+    rows = 0
+    cols = 0
+
+    for key in kbd.keys:
+        row = int(key.labels[9]) # TO-DO: add errorcase
+        col = int(key.labels[11]) # TO-DO: add errorcase
+
+        if row + 1 > rows:
+            rows = row + 1
+        if col + 1 > cols:
+            cols = col + 1
 
     # The final list that will actually be used in the info.json
     qmk_layout_all = []
@@ -235,6 +247,14 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
 
     if usb:
         keyboard["usb"] = usb
+
+    keyboard["diode_direction"] = diode_dir
+    if pin_dict:
+        if len(pin_dict["cols"]) != cols or len(pin_dict["rows"]) != rows:
+            raise Exception("Number of columns/rows in netlist does not match the KLE!")
+        keyboard["matrix_pins"] = pin_dict
+    else:
+        keyboard["matrix_pins"] = {'cols': ['X', ] * cols, 'rows': ['X', ] * rows}
 
     return keyboard
 
@@ -638,41 +658,46 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
 # GENERATE MAIN CONFIG.H
 
 def kbd_to_main_config(kbd: Keyboard, layers:int=4) -> str:
-    rows = 0
-    cols = 0
+    # rows = 0
+    # cols = 0
 
-    for key in kbd.keys:
-        row = int(key.labels[9]) # TO-DO: add errorcase
-        col = int(key.labels[11]) # TO-DO: add errorcase
+    # for key in kbd.keys:
+    #     row = int(key.labels[9]) # TO-DO: add errorcase
+    #     col = int(key.labels[11]) # TO-DO: add errorcase
 
-        if row + 1 > rows:
-            rows = row + 1
-        if col + 1 > cols:
-            cols = col + 1
+    #     if row + 1 > rows:
+    #         rows = row + 1
+    #     if col + 1 > cols:
+    #         cols = col + 1
         
     config_lines = []
 
-    config_lines.append('/* key matrix size */')
-    config_lines.append('\n')
-    config_lines.append('#define MATRIX_ROWS %s' % (rows))
-    config_lines.append('\n')
-    config_lines.append('#define MATRIX_COLS %s' % (cols))
-    config_lines.append('\n\n')
+    # config_lines.append('/* key matrix size */')
+    # config_lines.append('\n')
+    # config_lines.append('#define MATRIX_ROWS %s' % (rows))
+    # config_lines.append('\n')
+    # config_lines.append('#define MATRIX_COLS %s' % (cols))
+    # config_lines.append('\n\n')
 
-    config_lines.append('#define MATRIX_ROW_PINS {%s}' % (','.join(['X'] * rows)) )
-    config_lines.append('\n')
-    config_lines.append('#define MATRIX_COL_PINS {%s}' % (','.join(['X'] * cols)) )
-    config_lines.append('\n\n')
+    # config_lines.append('#define MATRIX_ROW_PINS {%s}' % (','.join(['X'] * rows)) )
+    # config_lines.append('\n')
+    # config_lines.append('#define MATRIX_COL_PINS {%s}' % (','.join(['X'] * cols)) )
+    # config_lines.append('\n\n')
 
-    config_lines.append('/* COL2ROW or ROW2COL */')
-    config_lines.append('\n')
-    config_lines.append('#define DIODE_DIRECTION %s' % ('COL2ROW'))
-    config_lines.append('\n')
+    # config_lines.append('/* COL2ROW or ROW2COL */')
+    # config_lines.append('\n')
+    # config_lines.append('#define DIODE_DIRECTION %s' % ('COL2ROW'))
+    # config_lines.append('\n')
 
     if layers != 4 and layers > 0 and layers <= 32:
-        config_lines.append('\n')
+        #config_lines.append('\n')
         config_lines.append(f'#define DYNAMIC_KEYMAP_LAYER_COUNT {layers}')
         config_lines.append('\n')
+    else:
+        #config_lines.append('\n')
+        config_lines.append(f'/* This file is empty and unrequired */')
+        config_lines.append('\n')
+
 
     config_all = "/* SPDX-License-Identifier: GPL-2.0-or-later */\n\n#pragma once\n\n#include \"config_common.h\"\n\n"
     for line in config_lines:

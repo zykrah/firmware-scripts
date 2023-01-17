@@ -104,3 +104,11 @@ select
 .custom-file-upload {
     cursor: pointer;
 }
+
+.form-style-1 code {
+	background: #edf5f7;
+	word-wrap: break-word;
+	box-decoration-break: clone;
+	padding: .1rem .3rem .2rem;
+	border-radius: .2rem;
+  }

@@ -11,7 +11,7 @@
 <section>
     <div class="file_input_form form-style-1">
         <h1>Firmware Script by Zykrah</h1>
-        <p><b>NOTE: THE MAIN POINT OF THIS SCRIPT IS THAT YOU CAN EASILY <u>MASS-LABEL KEYS</u> IN KLE.</b> View information about how to configure your KLE <a href="https://github.com/zykrah/firmware-scripts">here</a>.</p>
+        <p><b>NOTE: THE MAIN POINT OF THIS SCRIPT IS THAT YOU CAN EASILY <u>MASS-LABEL KEYS</u> IN KLE.</b> View information about <a href="https://github.com/zykrah/firmware-scripts">how to configure your KLE here</a>.</p>
         <form action="/" method = "POST" enctype="multipart/form-data" accept=".json">
             <!-- <p>KLE: <input type = "text" name = "kle-text" /></p> -->
             <div class = "file_input">Upload KLE (Optional if pasting raw data below): 
@@ -31,29 +31,43 @@
             <p>Board Name (Optional): <input type = "text" name = "board-name" value="{{ request.form['board-name'] or 'Keyboard'}}"/></p>
             <p>Maintainer (Optional): <input type = "text" name = "maintainer" value="{{ request.form['maintainer'] or 'qmk'}}"/></p>
             <p>URL (Optional): <input type = "text" name = "url" value="{{ request.form['url'] }}"/></p>
-            <p>Vendor ID (Change as required): <input type = "text" name = "vendor-id" value="{{ request.form['vendor-id'] or '0xFEED'}}"/></p>
+            <p>Vendor ID (Change as required <b>You MUST change this if using VIA</b>): <input type = "text" name = "vendor-id" value="{{ request.form['vendor-id'] or '0xFEED'}}"/></p>
             <p>Product ID (Change as required): <input type = "text" name = "product-id" value="{{ request.form['product-id'] or '0x0001'}}"/></p>
-            <p>Device Version: <input type = "text" name = "device-ver" value="{{ request.form['device-ver'] or '0.0.1'}}"/></p>
-            <p>VIA(L) Lighting (Optional) NOTE: this property is no longer supported as of VIA v3: <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
+            <p>Device Version (Change as required): <input type = "text" name = "device-ver" value="{{ request.form['device-ver'] or '0.0.1'}}"/></p>
+            <p>VIA(L) Lighting (Optional) NOTE: this property is <b>no longer supported as of VIA v3</b>: <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
             <p>MCU Preset (Optional): <select name="mcu-preset" method="GET">
                 {% for preset in mcu_presets %}
                     <option value="{{preset}}" {% if mcu_choice == preset %} selected {% endif %} >{{preset}}</option>"
                 {% endfor %}
             </select></p>
-            <p>Number of Keymap Layers: <input type = "text" name = "layers" value="{{ request.form['layers'] or '4'}}"/></p>
-            <p>VIAL Layout (.vil) OR VIA Layout (.json) File (Optional: <a href="https://github.com/zykrah/firmware-scripts#keymapc">See documentation - KEYMAP.C</a>): <input type = "text" name = "layout-file" value="{{ request.form['layout-file'] }}"/></p>
+            <p>Number of Keymap Layers (Default: 4): <input type = "text" name = "layers" value="{{ request.form['layers'] or '4'}}"/></p>
+            <p>VIAL Layout (<code>.vil</code>) OR VIA Layout (<code>.json</code>) File (Optional: fills out <b>keymap.c</b>, <a href="https://github.com/zykrah/firmware-scripts#keymapc">See documentation - KEYMAP.C</a>): <input type = "text" name = "layout-file" value="{{ request.form['layout-file'] }}"/></p>
+            <!-- <p>KiCAD Netlist File (Optional: <a href="https://github.com/zykrah/firmware-scripts#kicad-netlist">See documentation - KiCAD Netlist</a>): <input type = "text" name = "netlist" value="{{ request.form['netlist'] }}"/></p> -->
+            <div class = "file_input">KiCAD Netlist File (Optional: for <b>info.json</b> mcu pinout, <a href="https://github.com/zykrah/firmware-scripts#kicad-netlist">See documentation - KiCAD Netlist</a>): 
+                <label for="netlist-upload" class="custom-file-upload">
+                    Upload a KiCAD Netlist (.net)...
+                </label>
+                <input id="netlist-upload" type="file" name = "netlist" enctype="multipart/form-data" value="{{ request.files['netlist'] or '' }}">
+                <script>
+                    $('#netlist-upload').change(function() {
+                        var i = $(this).prev('label').clone();
+                        var netlist = $('#netlist-upload')[0].files[0].name;
+                        $(this).prev('label').text(netlist);
+                    });
+                </script>
+            </div>
             <p><input class = "submit" type = "submit" value = "Submit" /></p>
         </form>
     </div>
     
     <div class="file_output_form form-style-1">
         <li style="width: 100%;">Outputs:</li>
-        <form action="/" method = "GET">
-            <div><u>QMK info.json</u> (this goes in main keyboard folder): <textarea class = "qmk_info_json_output" style="background-color: #f3f3f3;" readonly>{{qmk_info_json or "Upload or Paste a valid KLE..."}}</textarea></div>
-            <div><u>VIA(L) json</u> (this goes in `keymaps/vial/` OR `keymaps/via/`, NOTE: the lighting property is no longer supported as of VIA v3, <b>you will have to remove it if using the latest version of VIA</b>): <textarea class = "vial_json_output" style="background-color: #f3f3f3;" readonly>{{vial_json or "Upload or Paste a valid KLE..."}}</textarea></div>
-            <div><u>VIAL config.h</u> (this goes in `keymaps/vial/`): <textarea class = "vial_config_h_output" style="background-color: #f3f3f3;" readonly>{{vial_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
-            <div><u>Main keyboard config.h</u> (this goes in main keyboard folder, <b>set the pins manually</b>, then you can add more to this file): <textarea class = "main_config_h_output" style="background-color: #f3f3f3;" readonly>{{main_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
-            <div><u>keymap.c file</u> (this goes in all your folders inside `keymaps/`): <textarea class = "keymap_output" style="background-color: #f3f3f3;" readonly>{{keymap or "Upload or Paste a valid KLE..."}}</textarea></div>
+        <form action="/" method = "GET"> 
+            <div><u>QMK info.json</u>: <textarea class = "qmk_info_json_output" style="background-color: #f3f3f3;" readonly>{{qmk_info_json or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>VIA(L) json</u> (<code>/keymaps/vial/vial.json</code> OR upload in VIA's <code>Design</code> tab, NOTE: the lighting property is no longer supported as of VIA v3, <b>you will have to remove it if using the latest version of VIA</b>): <textarea class = "vial_json_output" style="background-color: #f3f3f3;" readonly>{{vial_json or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>VIAL config.h</u> (VIAL ONLY: <code>/keymaps/vial/config.h</code>): <textarea class = "vial_config_h_output" style="background-color: #f3f3f3;" readonly>{{vial_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>Main keyboard config.h</u> (generally empty, you can add more to this file if required): <textarea class = "main_config_h_output" style="background-color: #f3f3f3;" readonly>{{main_config_h or "Upload or Paste a valid KLE..."}}</textarea></div>
+            <div><u>keymap.c file</u>: <textarea class = "keymap_output" style="background-color: #f3f3f3;" readonly>{{keymap or "Upload or Paste a valid KLE..."}}</textarea></div>
             <div><u>kb.h file</u> (<b>NOT required</b> if using the output info.json, this is just for reference): <textarea class = "keyboard_h_output" style="background-color: #f3f3f3;" readonly>{{keyboard_h or "Upload or Paste a valid KLE..."}}</textarea></div>
         </form>
     </div>

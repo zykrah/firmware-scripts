@@ -2,7 +2,7 @@
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid
-from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict
+from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins
 import json
 import re
 import requests
@@ -48,13 +48,34 @@ def run_script():
     except ValueError as e:
         raise Exception(f'Number of Layers needs to be an integer, {e}')
     layout_file = form_data.get('layout-file')
+    #netlist = form_data.get('netlist')
 
-    uploaded_file = request.files['file']
-    if 'file' in request.files.keys():
-        uploaded_file = request.files['file']
-    else:
-        uploaded_file = None
+    uploaded_file = request.files.get('file')
+    # if 'file' in request.files.keys():
+    #     uploaded_file = request.files['file']
+    # else:
+    #     uploaded_file = None
     
+
+    #print(request.files.keys())
+
+    uploaded_netlist = request.files.get('netlist')
+    # uploaded_netlist = request.files['netlist']
+    # if 'netlist' in request.files.keys():
+    #     uploaded_netlist = request.files['netlist']
+    # else:
+    #     uploaded_netlist = None
+
+
+    #print(uploaded_netlist)
+    if uploaded_netlist:
+        netlist = str(uploaded_netlist.read(), 'utf-8')
+        # content = uploaded_netlist.read()
+        # netlist = str(content, 'utf-8')
+    else:
+        netlist = None
+    #print(netlist)
+
     if uploaded_file or kle_raw:
         if uploaded_file:
             content = uploaded_file.read()
@@ -65,7 +86,7 @@ def run_script():
 
         try:
             # print(text)
-            write_file('test-text.json', text)
+            # write_file('test-text.json', text)
 
 
             # Deserialize json
@@ -82,16 +103,33 @@ def run_script():
             if mcu_choice == 'RP2040':
                 mcu = 'RP2040'
                 bootloader = 'rp2040'
+                if netlist:
+                    output_pin_pref = "GP"
+                    schem_pin_pref = "GPIO"
             elif mcu_choice == '32U4':
                 mcu = 'atmega32u4'
                 bootloader = 'atmel-dfu'
+                if netlist:
+                    output_pin_pref = ""
+                    schem_pin_pref = "P"
             else:
                 mcu = None
                 bootloader = None
 
+            diode_dir = "COL2ROW"
+            if mcu_choice != 'None' and netlist:
+                try:
+                    pin_dict = extract_matrix_pins(netlist, mcu, output_pin_pref, schem_pin_pref)
+                except Exception as e:
+                    raise Exception(f"Invalid netlist provided!, {e}")
+            elif mcu_choice == 'None' and netlist:
+                raise Exception("You need to choose a MCU preset to utilise the netlist function!")
+            else:
+                pin_dict = {}
+
             # Generate a QMK info.json file used for QMK Configurator
             qmk_info_path = 'info.json'
-            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader)
+            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, pin_dict, diode_dir)
             qmk_info_content = json.dumps(qmk_info_json, indent=4, separators=(', ', ': '), sort_keys=False, cls=InfoJSONEncoder)
             # write_file(qmk_info_path, qmk_info_content)
 
