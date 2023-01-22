@@ -644,6 +644,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
                 layer_keys.append('\n\t\t')
             layer_keys.append(f'{kc},'.ljust(max_kc_len))
 
+        layer_keys[-1] = layer_keys[-1].strip().rstrip(',')
         #keymap_lines.append(f'#define ')
         #keymap_lines.append(f'\t[{i}] = {layout_name}(\n\t\t{"".join(layer_keys)}\n\t),\n\n')
         keymap_lines.append('\t[{}] = {}(\n\t\t{}\n\t),\n\n'.format(i, layout_name, ''.join(layer_keys)))
