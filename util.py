@@ -115,7 +115,11 @@ def extract_matrix_pins(netlist:str, mcu:str="RP2040", output_pin_prefix:str="GP
 
     for comp in tree[3]:
         for prop in comp:
-            if prop[0] == "value" and mcu.lower() in prop[1].lower():
+            if mcu.lower().startswith("stm32"):
+                testcase = "stm32f"
+            else:
+                testcase = mcu.lower()
+            if prop[0] == "value" and prop[1].lower().startswith(testcase):
                 mcu_comp = comp
 
     if not mcu_comp:
