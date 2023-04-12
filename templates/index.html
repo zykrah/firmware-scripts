@@ -29,6 +29,7 @@
             </div>
             <p>KLE Raw Data (Optional if uploading file above): <textarea name = "kle-raw">{{ request.form['kle-raw'] }}</textarea></p>
             <p>Board Name (Optional): <input type = "text" name = "board-name" value="{{ request.form['board-name'] or 'Keyboard'}}"/></p>
+            <p>Manufacturer (Required): <input type = "text" name = "manufacturer" value="{{ request.form['manufacturer'] or 'MANUFACTURER'}}"/></p>
             <p>Maintainer (Optional): <input type = "text" name = "maintainer" value="{{ request.form['maintainer'] or 'qmk'}}"/></p>
             <p>URL (Optional): <input type = "text" name = "url" value="{{ request.form['url'] }}"/></p>
             <p>Vendor ID (Change as required <b>You MUST change this if using VIA</b>): <input type = "text" name = "vendor-id" value="{{ request.form['vendor-id'] or '0xFEED'}}"/></p>

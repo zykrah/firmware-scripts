@@ -6,7 +6,7 @@ from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layou
 import json
 import re
 import requests
-
+from traceback import format_exc
 
 from json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
 
@@ -40,6 +40,7 @@ def run_script():
     vendor_id = form_data['vendor-id']
     product_id = form_data['product-id']
     device_ver = form_data['device-ver']
+    manufacturer = form_data['manufacturer']
     mcu_choice = form_data.get('mcu-preset')
     try:
         layers = int(form_data.get('layers'))
@@ -99,7 +100,7 @@ def run_script():
 
             # Generate a QMK info.json file used for QMK Configurator
             qmk_info_path = 'info.json'
-            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, board, pin_dict, diode_dir)
+            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, board, pin_dict, diode_dir, manufacturer)
             qmk_info_content = json.dumps(qmk_info_json, indent=4, separators=(', ', ': '), sort_keys=False, cls=InfoJSONEncoder)
             # write_file(qmk_info_path, qmk_info_content)
 
@@ -137,7 +138,7 @@ def run_script():
 
 
         except Exception as e:
-            error_message = "ERROR: " + str(e) + "\n\nREAD THE DOCUMENTATION IF YOU HAVE NOT ALREADY.\nSEE https://github.com/zykrah/firmware-scripts."
+            error_message = "ERROR: \n\n" + format_exc() + "\n\nREAD THE DOCUMENTATION IF YOU HAVE NOT ALREADY.\nSEE https://github.com/zykrah/firmware-scripts.\n\nIf there isn't a specific error, please contact me."
             return render_template('index.html',
                                    qmk_info_json = error_message,
                                    vial_json = error_message,

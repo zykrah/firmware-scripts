@@ -27,6 +27,7 @@ print(f"Deserialized and Serialized JSONs are identical: {read_file(input_kle_js
 # Generate a QMK info.json file used for QMK Configurator
 name = 'Slime88'
 maintainer = 'Zykrah'
+manufacturer = 'MANUFACTURER'
 url = ""
 vid = "0xFEED"
 pid = "0x0001"
@@ -59,7 +60,7 @@ else:
     pin_dict = {}
 
 qmk_info_path = 'info.json'
-qmk_info_content = kbd_to_qmk_info(keyboard, name, maintainer, url, vid, pid, ver, mcu, bootloader, board, pin_dict, diode_dir)
+qmk_info_content = kbd_to_qmk_info(keyboard, name, maintainer, url, vid, pid, ver, mcu, bootloader, board, pin_dict, diode_dir, manufacturer)
 write_file(qmk_info_path, json.dumps(qmk_info_content, indent=4, separators=(', ', ': '), sort_keys=False, cls=InfoJSONEncoder))
 
 
