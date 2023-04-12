@@ -24,9 +24,9 @@ The idea is to then follow the following guidelines to be able to output various
 ![image](https://user-images.githubusercontent.com/23428162/168476640-09a4b226-8364-4fc1-833d-9fd1efac6a04.png)
 - 0:  (QMK info.json only) If there is text here, it is included as the "label" in the info.json
 - 1:  (For keymap.c) QMK Keycodes go here for layer 0 of the keymap.c, if nothing is included keys default to `KC_TRNS`
-- 2:  (VIAL only) If there is a 'u' here, the key is included as a key for the unlock combo 
+- 2:  (VIAL only) If there is a `u` here, the key is included as a key for the unlock combo 
 - 3:  Multilayout index
-- 4:  (VIAL only) If there is an 'e' here, the key is an encoder
+- 4:  (VIAL) If there is an `e` here, the key is an encoder, (VIA) put `eX` here to represent the `X`th encoder e.g. `e0`
 - 5:  Multilayout value
 - 6:  Secondary Multilayout name (if there is a list of multilayout options i.e. more than 2 e.g. multiple bottom row layouts. See example board below.)
 - 7:  Primary Multilayout name/label (needs to be in at least one of the keys for any given multilayout option. If there is a list of multilayout options, at least one key of each value should have a secondary label in position 6. See example board below.)
