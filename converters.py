@@ -141,6 +141,8 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
 
 
     # Special case to handle when a key isn't in the max multilayout but is required for a separate multilayout
+    # E.g. Multilayout where a split spacebar layout doesn't include the original matrix value for full spacebar,
+    # since that split multilayout will have more keys and will be picked by default.
     for key in [k for k in kbd.keys if k in ml_keys]:
         ml_ndx = int(key.labels[3])
         ml_val = int(key.labels[5])
@@ -149,6 +151,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
         if (key.labels[9], key.labels[11]) not in matrix_list:
             #print(key)
             ml_dict[ml_ndx][max_val].append(key)
+            # Temporary, currently just adds the first key it sees into the layout_all, may cause issues but is a niche scenario
             qmk_keys.append(key)
 
 
@@ -715,12 +718,38 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
         encoder_kc = {}
 
         if layout_dict:
-            if "layout" in layout_dict.keys():  # VIAL layout file
-                pass #WIP
+            if "encoder_layout" in layout_dict.keys():  # VIAL layout file
+                for i in range(encoders_num):
+                    enc = []
+                    for n in range(layers):
+                        _enc = layout_dict["encoder_layout"][n][i]
+                        for n, kc in enumerate(_enc):
+                            # Convert (VIALs) deprecated keycodes into updated ones if required
+                            if conversion_dict:
+                                if kc in conversion_dict.keys():
+                                    _enc[n] = conversion_dict[kc]
+
+                            # Convert lengthened keycodes into shortened aliases if required
+                            if keycode_dict:
+                                if kc in keycode_dict.keys():
+                                    _enc[n] = keycode_dict[kc]
+                        enc.append(_enc)
+                    encoder_kc[i] = enc
 
             elif "encoders" in layout_dict.keys():  # VIA layout file
                 for i in range(encoders_num):
-                    encoder_kc[i] = layout_dict["encoders"][i]
+                    #encoder_kc[i] = layout_dict["encoders"][i]
+
+                    kcs = layout_dict["encoders"][i]
+                    for _ in range(len(kcs)):
+                        for n, kc in enumerate(kcs[_]):
+                            # Convert lengthened keycodes into shortened aliases if required
+                            if keycode_dict:
+                                if kc in keycode_dict.keys():
+                                    kcs[_][n] = keycode_dict[kc]
+                    
+                    encoder_kc[i] = kcs
+                    
 
         else:
             for i in range(encoders_num):
