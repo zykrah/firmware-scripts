@@ -345,6 +345,9 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id
         if og_key.labels[4] == "e": # encoder; VIAL ONLY
             key.labels[4] = og_key.labels[4]
 
+        elif og_key.labels[4].startswith("e"): # encoder; VIA (I know this is included in the VIAL converter, will have to change later)
+            key.labels[4] = og_key.labels[4]
+
         # Matrix coords
         row_lbl = og_key.labels[9]
         col_lbl = og_key.labels[11]
