@@ -1,11 +1,46 @@
 from copy import deepcopy
-from serial import Keyboard, KeyboardMetadata, serialize, deserialize, sort_keys
+from serial import Keyboard, Key, KeyboardMetadata, serialize, deserialize, sort_keys
 from collections import OrderedDict
 
 from util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
 import json
 from json import JSONDecodeError
 
+
+def extract_row_col(key, row_lbl_ndx=9, col_lbl_ndx=11):
+    row_lbl = key.labels[row_lbl_ndx]
+    col_lbl = key.labels[col_lbl_ndx]
+
+    # Error keys without row and/or column labels
+    # # if not (row_lbl and col_lbl): # this line is needed in the case that labels are None (no longer required since I changed the default label values to empty strings instead)
+    # #     continue
+    if not (row_lbl.isnumeric() and col_lbl.isnumeric()):
+        if row_lbl.isnumeric():
+            raise Exception(f"Key at ({key.x}, {key.y}) has a row value of {row_lbl}, but is missing a valid column label.")
+        elif col_lbl.isnumeric():
+            raise Exception(f"Key at ({key.x}, {key.y}) has a column value of {col_lbl}, but is missing a valid row label.")
+        else:
+            raise Exception(f"Key at ({key.x}, {key.y}) is missing a valid row and/or column label.")
+
+    row = int(row_lbl)
+    col = int(col_lbl)
+    return row, col
+
+def extract_ml_val_ndx(key, ml_val_lbl_ndx=3, ml_ndx_lbl_ndx=5):
+    val_lbl = key.labels[ml_val_lbl_ndx]
+    ndx_lbl = key.labels[ml_ndx_lbl_ndx]
+
+    if not (val_lbl.isnumeric() and ndx_lbl.isnumeric()):
+        if val_lbl.isnumeric():
+            raise Exception(f"Key at ({key.x}, {key.y}) has a multilayout value of {val_lbl}, but is missing a valid multilayout index.")
+        elif ndx_lbl.isnumeric():
+            raise Exception(f"Key at ({key.x}, {key.y}) has a multilayout index of {ndx_lbl}, but is missing a valid multilayout value.")
+        else:
+            raise Exception(f"Key at ({key.x}, {key.y}) is missing a valid multilayout value abd index label.")
+
+    val = int(val_lbl)
+    ndx = int(ndx_lbl)
+    return val, ndx
 
 # GENERATE INFO.JSON
 # TO-DO:
@@ -21,13 +56,10 @@ def get_multilayout_keys(kbd: Keyboard) -> bool:
     """Returns a list of multilayout keys"""
     keys = []
     for key in kbd.keys:
-        if key.labels[3].isnumeric() and key.labels[5].isnumeric():
+        if key.labels[3] or key.labels[5]:
+            extract_ml_val_ndx(key) # Just to test labels
             keys.append(key)
     return keys
-
-# TO-DO:
-# - Need to update this so that it doesn't miss keys that should be part of 
-#   the matrix, but aren't part a certain max multilayout.
 
 def get_layout_all(kbd: Keyboard) -> Keyboard:
     """Returns a Keyboard with all maximum multilayouts chosen.
@@ -55,8 +87,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
         if key.labels[4] == 'e':
             continue
 
-        ml_ndx = int(key.labels[3])
-        ml_val = int(key.labels[5])
+        ml_ndx, ml_val = extract_ml_val_ndx(key)
 
         # Create dict with multilayout index if it doesn't exist
         if not ml_dict.get(ml_ndx):
@@ -74,9 +105,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
 
     # Iterate over multilayout keys
     for key in [k for k in kbd.keys if k in ml_keys]:
-        # Already know they will have these labels which are integers based on the get_multilayout_keys() function
-        ml_ndx = int(key.labels[3])
-        ml_val = int(key.labels[5])
+        ml_ndx, ml_val = extract_ml_val_ndx(key)
 
         # Get current list of amount of keys in all ml options
         ml_val_length_list = [len(ml_dict[ml_ndx][i]) for i in ml_dict[ml_ndx].keys() if isinstance(i, int)]
@@ -144,11 +173,10 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
     # E.g. Multilayout where a split spacebar layout doesn't include the original matrix value for full spacebar,
     # since that split multilayout will have more keys and will be picked by default.
     for key in [k for k in kbd.keys if k in ml_keys]:
-        ml_ndx = int(key.labels[3])
-        ml_val = int(key.labels[5])
+        ml_ndx, ml_val = extract_ml_val_ndx(key)
         max_val = ml_dict[ml_ndx]['max']
-        matrix_list = [(key.labels[9], key.labels[11]) for key in ml_dict[ml_ndx][max_val]]
-        if (key.labels[9], key.labels[11]) not in matrix_list:
+        matrix_list = [(extract_row_col(key)) for key in ml_dict[ml_ndx][max_val]]
+        if (extract_row_col(key)) not in matrix_list:
             #print(key)
             ml_dict[ml_ndx][max_val].append(key)
             # Temporary, currently just adds the first key it sees into the layout_all, may cause issues but is a niche scenario
@@ -194,13 +222,10 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
     cols = 0
 
     for key in kbd.keys:
-        row = int(key.labels[9]) # TO-DO: add errorcase
-        col = int(key.labels[11]) # TO-DO: add errorcase
+        row, col = extract_row_col(key)
 
-        if row + 1 > rows:
-            rows = row + 1
-        if col + 1 > cols:
-            cols = col + 1
+        rows = max(rows, row + 1)
+        cols = max(cols, col + 1)
 
     # The final list that will actually be used in the info.json
     qmk_layout_all = []
@@ -224,8 +249,7 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
             qmk_key['h'] = key.height
 
         if key.labels[9].isnumeric() and key.labels[11].isnumeric():
-            row = key.labels[9]
-            col = key.labels[11]
+            row, col = extract_row_col(key)
             qmk_key['matrix'] = [int(row), int(col)]
 
         if key.labels[0]:
@@ -349,23 +373,7 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id
             key.labels[4] = og_key.labels[4]
 
         # Matrix coords
-        row_lbl = og_key.labels[9]
-        col_lbl = og_key.labels[11]
-
-        # Error keys without row and/or column labels
-        # # if not (row_lbl and col_lbl): # this line is needed in the case that labels are None (no longer required since I changed the default label values to empty strings instead)
-        # #     continue
-        if not (row_lbl.isnumeric() and col_lbl.isnumeric()):
-            if row_lbl.isnumeric():
-                raise Exception(f"Key at ({key.x},{key.y}) has row value ({row_lbl}), but is missing a valid column label.")
-            elif col_lbl.isnumeric():
-                raise Exception(f"Key at ({key.x},{key.y}) has column value ({col_lbl}), but is missing a valid row label.")
-            else:
-                raise Exception(f"Key at ({key.x},{key.y}) is missing a valid row and/or column label.")
-            #continue
-
-        row = int(og_key.labels[9])
-        col = int(og_key.labels[11])
+        row, col = extract_row_col(og_key)
 
         # Add if unlock key
         if og_key.labels[2] == "u": 
@@ -373,32 +381,18 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id
             vial_unlock_cols.append(col)
 
         # Update total rows and columns
-        if row + 1 > rows:
-            rows = row + 1
-        if col + 1 > cols:
-            cols = col + 1
+        rows = max(rows, row + 1)
+        cols = max(cols, col + 1)
             
         key.labels[0] = f"{row},{col}"
 
+        if not (key.labels[3] or key.labels[5]):
+            continue # Skip non multilayout keys
+
         # Multi-layout
-        ml_ndx_lbl = og_key.labels[3] # Multilayout index
-        ml_val_lbl = og_key.labels[5] # Multilayout value
+        ml_ndx, ml_val = extract_ml_val_ndx(og_key)
 
-        # if not (ml_ndx_lbl and ml_val_lbl):
-        #     continue
-        if not (ml_ndx_lbl.isnumeric() and ml_val_lbl.isnumeric()):
-            if ml_ndx_lbl.isnumeric():
-                raise Exception(f"Key at ({key.x},{key.y}) has a multilayout index ({ml_ndx_lbl}), but not a mulitlayout value.")
-            elif ml_val_lbl.isnumeric():
-                raise Exception(f"Key at ({key.x},{key.y}) has a multilayout value ({ml_val_lbl}), but not a multilayout index.")
-            else:
-                continue
-
-        ml_ndx = int(og_key.labels[3])
-        ml_val = int(og_key.labels[5])
-
-        if ml_ndx + 1 > ml_count:
-            ml_count = ml_ndx + 1 # sets ml_count to highest ml index
+        ml_count = max(ml_count, ml_ndx + 1) # sets ml_count to highest ml index
 
         key.labels[7] = og_key.labels[7] # Name of multilayout (Primary multilayout name)
         key.labels[6] = og_key.labels[6] # Name of multi-multilayout (Secondary multilayout name)
@@ -512,13 +506,10 @@ def kbd_to_layout_macro(kbd: Keyboard) -> str:
 
     # Calculates total rows and cols
     for key in kbd.keys:
-        row = int(key.labels[9])
-        col = int(key.labels[11])
+        row, col = extract_row_col(key)
 
-        if row + 1 > rows:
-            rows = row + 1
-        if col + 1 > cols:
-            cols = col + 1
+        rows = max(rows, row + 1)
+        cols = max(cols, col + 1)
 
     # This following code is based off qmk's generation.
     layouts_h_lines = []
@@ -531,8 +522,7 @@ def kbd_to_layout_macro(kbd: Keyboard) -> str:
     layout_matrix = [['XXX' for i in range(col_num)] for i in range(row_num)]
 
     for i, key in enumerate(kbd.keys):
-        row = int(key.labels[9])
-        col = int(key.labels[11])
+        row, col = extract_row_col(key)
         identifier = 'k%s%s' % (ROW_LETTERS[row], COL_LETTERS[col])
 
         try:
@@ -642,13 +632,10 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
     rows = 0
     cols = 0
     for key in kbd.keys:
-        row = int(key.labels[9])
-        col = int(key.labels[11])
+        row, col = extract_row_col(key)
 
-        if row + 1 > rows:
-            rows = row + 1
-        if col + 1 > cols:
-            cols = col + 1
+        rows = max(rows, row + 1)
+        cols = max(cols, col + 1)
 
     for i, layer_keys in enumerate(keymap_keys):
 
@@ -664,8 +651,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
                         kc = 'KC_TRNS'
                     else:
                         try:
-                            row = int(key.labels[9])
-                            col = int(key.labels[11])
+                            row, col = extract_row_col(key)
                             kc = vial_layout_dict[i][row][col]
                         except IndexError:
                             raise Exception('Invalid .vil file/layout dictionary provided')
@@ -676,8 +662,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
                         kc = 'KC_TRNS'
                     else:
                         try:
-                            row = int(key.labels[9])
-                            col = int(key.labels[11])
+                            row, col = extract_row_col(key)
                             kc = via_layout_dict[i][col + row*cols]
                         except IndexError:
                             raise Exception('Invalid VIA layout file provided')
