@@ -386,7 +386,7 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id
             
         key.labels[0] = f"{row},{col}"
 
-        if not (key.labels[3] or key.labels[5]):
+        if (not og_key.labels[3] or not og_key.labels[5]):
             continue # Skip non multilayout keys
 
         # Multi-layout
