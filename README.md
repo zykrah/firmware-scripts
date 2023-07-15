@@ -123,7 +123,7 @@ The keys are also offset appropriately.
 > ~~WIP: I want to be able to automatically detect (based on the multilayout keys), which combination of multi-layout options produces a `LAYOUT` for use with via (maximum amount of keys).~~ DONE
 
 > WIP: Add a more generic converter.
-> WIP: Add the option to create more layouts based on multilayouts picked by the user
+> ~~WIP: Add the option to create more layouts based on multilayouts picked by the user~~ DONE
 
 Example of the initial board being converted:
 
@@ -134,6 +134,20 @@ Below is what the `LAYOUT` looks like (represented in KLE). You can see how the 
 ![image](https://user-images.githubusercontent.com/23428162/168613442-5ea87f88-3bc4-4406-91d6-df2550f58f43.png)
 
 > **Note**: I haven't tested this with more complex multilayouts or larger boards.
+
+## Alternate Layouts
+
+You can specify different layouts to add extra alternative layouts (e.g. for QMK PR merging, where community layouts are required) to the info.json. Takes a a json/dict structured as shown in the example below. 
+
+More specifically: each dict key (e.g. `"tkl_ansi"`) corresponds to an extra layout named `LAYOUT_<key>` (e.g. `"LAYOUT_tkl_ansi"`), and takes one list. Each list should be a list of integers referring to the chosen multilayout value, and should correspond to the multilayout indexes (in order).
+
+Example (based on same KLE as used above):
+
+![image](https://user-images.githubusercontent.com/23428162/253728630-a360ff68-b45a-41e2-9947-521ac8ea66be.png)
+
+![image](https://user-images.githubusercontent.com/23428162/253728691-3be5951d-d966-45de-a8bb-65be6cb11220.png)
+
+> Thanks to @awkannan for writing this part of the code for me.
 
 ## Kicad Netlist
 

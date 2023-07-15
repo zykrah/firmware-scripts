@@ -12,11 +12,10 @@ from layouts import convert_key_list_to_layout, extract_row_col, get_layout_all,
 # - make a way of converting the other way around (INFO.JSON -> KEYBOARD)
 # DONE detect bounds of default layout and offset every key by a certain amount
 # DONE automatically generate a layout_all based on multilayout with maximum amount of keys
-# - create functions to easily set certain multilayouts
-# - make more generic converter
+# DONE create functions to easily set certain multilayouts
+# DONE make more generic converter
 # - be able to manually set the layout_all
-# - create multiple layouts based on a list of multilayout options
-
+# DONE create multiple layouts based on a list of multilayout options
 
 def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=None, pid=None, ver=None, mcu=None, bootloader=None, board=None, pin_dict=None, diode_dir="COL2ROW", manufacturer=None, alt_layouts=None) -> dict:
     """Converts a Keyboard into a QMK info.json (dict)"""
