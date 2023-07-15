@@ -78,15 +78,15 @@ write_file(vial_config_h_path, vial_config_h)
 #keyboard_h_content = kbd_to_layout_macro(keyboard)
 
 
-keymap_c_path = 'keymap.c'
-layout_dict = layout_str_to_layout_dict(read_file('vil.json'))
-link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
-keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
-# keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
-conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
-
-keymap_c_content = kbd_to_keymap(keyboard, layers, 1, layout_dict, keycodes_dict, conversion_dict)
-write_file(keymap_c_path, keymap_c_content)
-
-main_config_h_content = kbd_to_main_config(keyboard, layers)
-write_file('config.h', main_config_h_content)
+# keymap_c_path = 'keymap.c'
+# layout_dict = layout_str_to_layout_dict(read_file('vil.json'))
+# link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
+# keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
+# # keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
+# conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
+#
+# keymap_c_content = kbd_to_keymap(keyboard, layers, 1, layout_dict, keycodes_dict, conversion_dict)
+# write_file(keymap_c_path, keymap_c_content)
+#
+# main_config_h_content = kbd_to_main_config(keyboard, layers)
+# write_file('config.h', main_config_h_content)
