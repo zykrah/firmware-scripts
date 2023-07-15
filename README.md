@@ -20,6 +20,19 @@ You start with your KLE (colours for multilayout not necessary). Keep in mind th
 
 The idea is to then follow the following guidelines to be able to output various firmware-related files (e.g. a whole via.json).
 
+<details><summary><h2>NEW: <a href="https://zykrah.me/from-via">Convert existing VIA/L JSON to Firmware Script KLE</a></h2></summary>
+
+This allows you to convert an existing VIA/VIAL json file into the layout used for this firmware script. 
+
+(If there are multilayout values): Multilayout labels will automatically go into the widest key of any given multilayout
+
+> **Note**: The it outputs in the format of a KLE json, and **not raw data**. If you want to use the output as a raw data (either to paste into the main page of the site, or to paste into KLE's raw data to modify) you will have to remove the first set of `[]` brackets.
+
+Example:
+
+![image](https://user-images.githubusercontent.com/23428162/253729473-3c606377-67e6-45e5-91a5-e23c6ad872c8.png)
+
+</details>
 
 # Guidelines:
 ![image](https://user-images.githubusercontent.com/23428162/168476640-09a4b226-8364-4fc1-833d-9fd1efac6a04.png)
@@ -35,6 +48,8 @@ The idea is to then follow the following guidelines to be able to output various
 - 11: Col
 
 > **Note**: The name of the board can also be edited in KLE
+
+> **Note**: Rotated layouts are currently not tested/fully supported. If you want to use this tool with layouts with rotated keys, I would recommend doing the whole thing in two separate 'steps'. Once with a simplified, non-rotated KLE (ie in a grid) to generate the keymap.c, info.json, etc. And the second time you can use your rotated KLE for the VIA/L json.
 
 Example of the initial board being converted as per above guidelines:
 
@@ -247,7 +262,7 @@ How it shows up in VIA:
 # Extra
 I plan on further improving the scripts, and also adding more features.
 
-I also plan on soon implementing some code to convert from VIA -> KLE, VIA -> info.json, info.json -> KLE, etc.
+I also plan on soon implementing some code to convert from ~~VIA -> KLE, VIA -> info.json~~ (done), info.json -> KLE, etc.
 
 WIP:
 - be able to re-configure the "guidelines"/labels as you wish

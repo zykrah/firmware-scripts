@@ -2,7 +2,7 @@
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 from serial import serialize, deserialize
 from util import read_file, write_file, gen_uid, MCU_PRESETS, MCU_DICT
-from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins
+from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins, via_to_kbd
 import json
 import re
 import requests
@@ -155,9 +155,6 @@ def run_script():
                                    mcu_choice=mcu_choice
                                    )
 
-
-        # return Response(vial_json_content)
-        # return jsonify(vial_json)
         return render_template('index.html',
                                 qmk_info_json = qmk_info_content,
                                 vial_json = vial_json_content,
@@ -171,12 +168,48 @@ def run_script():
     
     else:
         return index()
+        #This just reloads the page if no file is selected and the user tries to POST. 
+
+
+VIA_TEMPLATE = """{
+  "name": "Keyboard",
+  "layouts": {
+    "labels": [],
+    "keymap": []
+  }
+}"""
+
+#These functions will run when POST method is used.
+@app.route('/from-via', methods = ["POST", "GET"] )
+def run_script_():
+    form_data = request.form
+    via_json = form_data.get('via-json')
+    raw_kle = form_data.get('raw-kle')
+
+    if via_json or raw_kle:
+        try:
+            if not via_json:
+                via_json = VIA_TEMPLATE
+            if raw_kle:
+                keymap = json.loads('[' + re.sub("(\w+):", r'"\1":',  raw_kle) + ']')
+                obj = json.loads(VIA_TEMPLATE)
+                obj['layouts']['keymap'] = keymap
+                via_json = json.dumps(obj)
+
+            # TO-DO: Create a proper KLE raw data JSON encoder
+            kle_ouput = json.dumps(serialize(via_to_kbd(via_json)), ensure_ascii=False, indent=2, cls=KLEJSONEncoder)
+            
+            print("Successfully completed a conversion of a via json!")
+
+        except Exception as e:
+            error_message = "ERROR: \n\n" + format_exc()
+            return render_template('from-via.html', output=error_message)
+
+        return render_template('from-via.html', output=kle_ouput)
+    
+    else:
+        return render_template('from-via.html', via_template=VIA_TEMPLATE)
       #This just reloads the page if no file is selected and the user tries to POST. 
-
-
-@app.route("/", methods=['GET'])
-def back():
-    return render_template("index.html")
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ from copy import deepcopy
 import json
 from json import JSONDecodeError
 
-from serial import Keyboard, KeyboardMetadata, serialize
+from serial import Keyboard, KeyboardMetadata, serialize, deserialize
 from util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
 from layouts import convert_key_list_to_layout, extract_row_col, get_layout_all, extract_ml_val_ndx, get_alternate_layouts
 
@@ -139,7 +139,7 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
 # CONVERT SIMPLIZED KLE TO VIA JSON
 # TO-DO
 # - detect if keyboard can be converted first
-# - make a way of converting the other way around (VIA KLE/JSON -> SIMPLIFIED KLE)
+# DONE make a way of converting the other way around (VIA KLE/JSON -> SIMPLIFIED KLE)
 # - add way to input the index for which label indices to use for rows/cols/multilayout etc
 # - change this function to have a more similar structure to the qmk info converter (for multilayouts)
 
@@ -283,10 +283,77 @@ def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id
     return vial_dict, config_h
 
 
-# CONVERT VIA JSON TO SIMPLIZED KLE
+# CONVERT VIA KLE JSON TO SIMPLIZED KLE
 
 def via_to_kbd(via_json: str) -> Keyboard:
-    pass
+    obj = json.loads(via_json)
+    text = json.dumps(obj['layouts']['keymap'])
+    if 'labels' in obj['layouts'].keys():
+        via_ml = obj['layouts']['labels']
+    else:
+        via_ml = []
+
+    kbd = deserialize(json.loads(text))
+    output_kbd = deepcopy(kbd)
+    ml_dict = {}
+    ml_length_dict = {}
+
+    # complete ml_dict: keeps track of if ml label has been assigned to a key yet
+    for _, obj in enumerate(via_ml):
+        if isinstance(obj, list): # list multilayout
+            ml_dict[_] = [True] * len(obj)
+        if isinstance(obj, str): # boolean multilayout
+            ml_dict[_] = True
+
+    # complete ml_length_dict: gets length of all keys in a given multilayout
+    for key in output_kbd.keys:
+        ml = key.labels[8]
+        split_ml = ml.split(",")
+
+        if len(split_ml) == 2:
+            ndx = int(split_ml[0]) # need to catch errors here
+            val = int(split_ml[1])
+
+            if ml_length_dict.get(ndx):
+                ml_length_dict[ndx].append(key.width)
+            else:
+                ml_length_dict[ndx] = [key.width]
+
+    for key in output_kbd.keys:
+        row_col = key.labels[0]
+        split_row_col = row_col.split(",")
+        
+        ml = key.labels[8]
+        split_ml = ml.split(",")
+        
+        # reset labels
+        key.labels = [""] * 12
+
+        if len(split_row_col) == 2:
+            row = split_row_col[0] # need to catch errors here
+            col = split_row_col[1]
+            key.labels[9] = row
+            key.labels[11] = col
+        
+        if len(split_ml) == 2:
+            ndx = int(split_ml[0]) # need to catch errors here
+            val = int(split_ml[1])
+            key.labels[3] = str(ndx)
+            key.labels[5] = str(val)
+
+            if isinstance(via_ml[ndx], list): # list multilayout
+                if ml_dict[ndx][0] and key.width == max(ml_length_dict[ndx]): # primary label
+                    key.labels[7] = via_ml[ndx][0] 
+                    ml_dict[ndx][0] = False
+                if ml_dict[ndx][val+1]: # secondary label
+                    key.labels[6] = via_ml[ndx][val+1]
+                    ml_dict[ndx][val+1] = False
+            else: # boolean multilayout
+                if ml_dict[ndx] and key.width == max(ml_length_dict[ndx]):
+                    key.labels[7] = via_ml[ndx]
+                    ml_dict[ndx] = False
+    
+    return output_kbd
 
 
 # GENERATE KEYBOARD.H (LAYOUT MACRO)

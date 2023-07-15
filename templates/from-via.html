@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/form.css"/>
+</head>
+<body>
+
+
+<section>
+    <div class="file_input_form form-style-1">
+        <h1>Firmware Script by Zykrah - VIA to Firmware Script KLE</h1>
+        <p><a href="/">Back to main page</a>.</p>
+        <form action="/from-via" method = "POST" enctype="multipart/form-data" accept=".json">
+            <p>VIA/L JSON: <textarea name = "via-json">{{ request.form['via-json'] or via_template }}</textarea></p>
+            <p>OR Raw KLE data of VIA/L board (overrides): <textarea name = "raw-kle">{{ request.form['raw-kle']}}</textarea></p>
+            <p><input class = "submit" type = "submit" value = "Submit" /></p>
+        </form>
+    </div>
+    
+    <div class="file_output_form form-style-1">
+        <li style="width: 100%;">Firmware Script KLE Ouput:</li>
+        <form action="/from-via" method = "GET"> 
+            <div><u>KLE (json format: remove first set of [] if you want to use it as raw KLE data)</u>: <textarea class = "kle_output" style="background-color: #f3f3f3;" readonly>{{output or "Input a valid VIA/L json or raw kle..."}}</textarea></div>
+        </form>
+    </div>
+</section>
+
+
+</body>
+</html>
