@@ -11,7 +11,7 @@
 <section>
     <div class="file_input_form form-style-1">
         <h1>Firmware Script by Zykrah</h1>
-        <p><b>NOTE: THE MAIN POINT OF THIS SCRIPT IS THAT YOU CAN EASILY <u>MASS-LABEL KEYS</u> IN KLE.</b> View information about <a href="https://github.com/zykrah/firmware-scripts">how to configure your KLE here</a>.</p>
+        <p><b>NOTE: THE MAIN POINT OF THIS SCRIPT IS THAT YOU CAN EASILY <u>MASS-LABEL KEYS</u> IN KLE.</b> View information about <a target="_blank" href="https://github.com/zykrah/firmware-scripts">how to configure your KLE here</a>.</p>
         <p><b>NEW: If you already have a VIA/L json file and want to convert to the Layout utilised by this firmware script</b>, go to <a href="/from-via">this page</a>.</p>
         <form action="/" method = "POST" enctype="multipart/form-data" accept=".json">
             <!-- <p>KLE: <input type = "text" name = "kle-text" /></p> -->
@@ -37,16 +37,16 @@
             <p>Product ID (Change as required): <input type = "text" name = "product-id" value="{{ request.form['product-id'] or '0x0001'}}"/></p>
             <p>Device Version (Change as required): <input type = "text" name = "device-ver" value="{{ request.form['device-ver'] or '0.0.1'}}"/></p>
             <p>VIA(L) Lighting (Optional) NOTE: this property is <b>no longer supported as of VIA v3</b>: <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
-            <p>Alternate layouts (Optional: <a href="https://github.com/zykrah/firmware-scripts#alternate-layouts">See documentation - Alternate Layouts</a>)</b>: <input type = "text" name = "layouts" value="{{ request.form['layouts'] }}"/></input></p>
+            <p>Alternate layouts (Optional: <a target="_blank" href="https://github.com/zykrah/firmware-scripts#alternate-layouts">See documentation - Alternate Layouts</a>)</b>: <input type = "text" name = "layouts" value="{{ request.form['layouts'] }}"/></input></p>
             <p>MCU Preset (Optional): <select name="mcu-preset" method="GET">
                 {% for preset in mcu_presets %}
                     <option value="{{preset}}" {% if mcu_choice == preset %} selected {% endif %} >{{preset}}</option>"
                 {% endfor %}
             </select></p>
             <p>Number of Keymap Layers (Default: 4): <input type = "text" name = "layers" value="{{ request.form['layers'] or '4'}}"/></p>
-            <p>VIAL Layout (<code>.vil</code>) OR VIA Layout (<code>.json</code>) File (Optional: fills out <b>keymap.c</b>, <a href="https://github.com/zykrah/firmware-scripts#keymapc">See documentation - KEYMAP.C</a>): <input type = "text" name = "layout-file" value="{{ request.form['layout-file'] }}"/></p>
-            <!-- <p>KiCAD Netlist File (Optional: <a href="https://github.com/zykrah/firmware-scripts#kicad-netlist">See documentation - KiCAD Netlist</a>): <input type = "text" name = "netlist" value="{{ request.form['netlist'] }}"/></p> -->
-            <div class = "file_input">KiCAD Netlist File (Optional: for <b>info.json</b> mcu pinout, <a href="https://github.com/zykrah/firmware-scripts#kicad-netlist">See documentation - KiCAD Netlist</a>): 
+            <p>VIAL Layout (<code>.vil</code>) OR VIA Layout (<code>.json</code>) File (Optional: fills out <b>keymap.c</b>, <a target="_blank" href="https://github.com/zykrah/firmware-scripts#keymapc">See documentation - KEYMAP.C</a>): <input type = "text" name = "layout-file" value="{{ request.form['layout-file'] }}"/></p>
+            <!-- <p>KiCAD Netlist File (Optional: <a target="_blank" href="https://github.com/zykrah/firmware-scripts#kicad-netlist">See documentation - KiCAD Netlist</a>): <input type = "text" name = "netlist" value="{{ request.form['netlist'] }}"/></p> -->
+            <div class = "file_input">KiCAD Netlist File (Optional: for <b>info.json</b> mcu pinout, <a target="_blank" href="https://github.com/zykrah/firmware-scripts#kicad-netlist">See documentation - KiCAD Netlist</a>): 
                 <label for="netlist-upload" class="custom-file-upload">
                     Upload a KiCAD Netlist (.net)...
                 </label>
