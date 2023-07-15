@@ -70,16 +70,17 @@ def get_specific_layout(kbd: Keyboard, layout_idx: List[int]) -> List[Key]:
     The layout_idx list should specify the index of each specified layout option
     Based on the configured input keyboard
     """
+    kbd = deepcopy(kbd)
     ml_keys = get_multilayout_keys(kbd)
 
     # We will return these keys for this layout
-    qmk_keys = []
+    layout_keys = []
     # Add non-multilayout keys to the list for now
     for key in [k for k in kbd.keys if k not in ml_keys]:
         # Ignore VIAL Encoder keys
         if key.labels[4] == 'e':
             continue
-        qmk_keys.append(key)
+        layout_keys.append(key)
 
     # Generate a dict of all multilayouts
     ml_dict = {}
@@ -145,16 +146,16 @@ def get_specific_layout(kbd: Keyboard, layout_idx: List[int]) -> List[Key]:
                     selected_key.rotation_y -= ml_y_offset
 
             # Add the key to the final list
-            qmk_keys.append(selected_key)
+            layout_keys.append(selected_key)
     # Offset all the remaining keys (align against the top left)
-    x_offset, y_offset = min_x_y(qmk_keys)
-    for key in qmk_keys:
+    x_offset, y_offset = min_x_y(layout_keys)
+    for key in layout_keys:
         key.x -= x_offset
         key.y -= y_offset
 
-    sort_keys(qmk_keys)  # sort keys (some multilayout keys may not be in the right order)
+    sort_keys(layout_keys)  # sort keys (some multilayout keys may not be in the right order)
 
-    return qmk_keys
+    return layout_keys
 
 
 
@@ -168,13 +169,13 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
 
     # This list will replace kbd.keys later
     # It is a list with only the keys to be included in the info.json
-    qmk_keys = []
+    layout_all_keys = []
     # Add non-multilayout keys to the list for now
     for key in [k for k in kbd.keys if k not in ml_keys]:
         # Ignore VIAL Encoder keys
         if key.labels[4] == 'e':
             continue
-        qmk_keys.append(key)
+        layout_all_keys.append(key)
 
     # Generate a dict of all multilayouts
     # E.g. Used to test and figure out the multilayout value with the maximum amount of keys
@@ -262,7 +263,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
                 key.rotation_y -= ml_y_offset
 
         # Add the key to the final list
-        qmk_keys.append(key)
+        layout_all_keys.append(key)
 
     # Special case to handle when a key isn't in the max multilayout but is required for a separate multilayout
     # E.g. Multilayout where a split spacebar layout doesn't include the original matrix value for full spacebar,
@@ -275,16 +276,16 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
             # print(key)
             ml_dict[ml_ndx][max_val].append(key)
             # Temporary, currently just adds the first key it sees into the layout_all, may cause issues but is a niche scenario
-            qmk_keys.append(key)
+            layout_all_keys.append(key)
 
     # Offset all the remaining keys (align against the top left)
-    x_offset, y_offset = min_x_y(qmk_keys)
-    for key in qmk_keys:
+    x_offset, y_offset = min_x_y(layout_all_keys)
+    for key in layout_all_keys:
         key.x -= x_offset
         key.y -= y_offset
 
     # Override kbd.keys with the keys only to be included in the info.json
-    kbd.keys = qmk_keys
+    kbd.keys = layout_all_keys
     sort_keys(kbd.keys)  # sort keys (some multilayout keys may not be in the right order)
 
     # # DEBUG: To view what the layout_all will look like (as a KLE)

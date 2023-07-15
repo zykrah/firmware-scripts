@@ -49,9 +49,8 @@ def kbd_to_qmk_info(kbd: Keyboard,
     # Before we figure out the all layout, generate the alternate layouts
     if alt_layouts:
         alternate_layout_key_map = get_alternate_layouts(kbd, alt_layouts)
-
-    # Removes all multilayout options except max layouts.
-    kbd = get_layout_all(kbd)
+    else:
+        alternate_layout_key_map = None
 
     rows = 0
     cols = 0
@@ -61,6 +60,9 @@ def kbd_to_qmk_info(kbd: Keyboard,
 
         rows = max(rows, row + 1)
         cols = max(cols, col + 1)
+
+    # Removes all multilayout options except max layouts.
+    kbd = get_layout_all(kbd)
 
     # The final list that will actually be used in the info.json
     qmk_layout_all = convert_key_list_to_layout(kbd.keys)
