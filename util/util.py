@@ -1,8 +1,10 @@
 from functools import cmp_to_key
 from dataclasses import dataclass, field as dcf
-from typing import Optional, List, Callable
+from typing import Tuple, Optional, Dict, List, Callable
 import secrets
 import re
+
+from util.serial import Key
 
 MCU_PRESETS = ['None', 'RP2040', '32U4', 'STM32']
 
@@ -44,7 +46,7 @@ def replace_chars(str:str, start:int, stop:int, new):
     return str.replace(str[start:stop], new)
 
 # Gets the bottom right coordinate of bounding box of a cluster of keys
-def max_x_y(keys: list) -> float:
+def max_x_y(keys: List[Key]) -> Tuple[float, float]:
     max_x: float = -1
     max_y: float = -1
 
@@ -57,7 +59,7 @@ def max_x_y(keys: list) -> float:
     return max_x, max_y
 
 # Gets the top left coordinate of bounding box of a cluster of keys
-def min_x_y(keys: list) -> float:
+def min_x_y(keys: List[Key]) -> Tuple[float, float]:
     min_x, min_y = max_x_y(keys)
 
     for key in keys:
@@ -68,7 +70,7 @@ def min_x_y(keys: list) -> float:
 
     return min_x, min_y
 
-def read_file(path: str):
+def read_file(path: str) -> str:
     with open(path, 'r', encoding='utf-8') as file:
         return file.read()
 
@@ -76,13 +78,12 @@ def write_file(path: str, content:str):
     with open(path, 'w', encoding='utf-8') as file:
         return file.write(content)
 
-def gen_uid(): # from vial-qmk/util/vial_generate_keyboard_uid.py
+def gen_uid() -> str: # from vial-qmk/util/vial_generate_keyboard_uid.py
     return "#define VIAL_KEYBOARD_UID {{{}}}".format(
         ", ".join(["0x{:02X}".format(x) for x in secrets.token_bytes(8)])
     )
 
 # Code for interpreting KiCAD netlist file
-
 def make_tree(data:str):
     items = re.findall(r"\(|\)|(?<=\").*?(?=\")|(?<=\()\w+", data)
 
@@ -101,7 +102,11 @@ def make_tree(data:str):
 
     return req(1)[0]
 
-def extract_matrix_pins(netlist:str, mcu:str="RP2040", output_pin_prefix:str="GP", schem_pin_prefix:str="GPIO") -> dict:
+def extract_matrix_pins(netlist: str,
+                        mcu: str = "RP2040",
+                        output_pin_prefix: str = "GP",
+                        schem_pin_prefix: str = "GPIO"
+                        ) -> Dict[str, List[str | int]]:
     """Takes a KiCAD netlist file as a string (`netlist`) and spits out a dict with column and row pins in order.
     `mcu` is used to search for the MCU component, based on component values.
     `output_pin_prefix` is what the output pins should start with (e.g. `"GP"` for RP2040, and empty (`""`) for 32U4).
