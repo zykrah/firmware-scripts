@@ -36,6 +36,7 @@
             <p>Product ID (Change as required): <input type = "text" name = "product-id" value="{{ request.form['product-id'] or '0x0001'}}"/></p>
             <p>Device Version (Change as required): <input type = "text" name = "device-ver" value="{{ request.form['device-ver'] or '0.0.1'}}"/></p>
             <p>VIA(L) Lighting (Optional) NOTE: this property is <b>no longer supported as of VIA v3</b>: <input type = "text" name = "lighting" value="{{ request.form['lighting'] }}"/></p>
+            <p>Alternate layouts (Optional: <a href="https://github.com/zykrah/firmware-scripts#alternate-layouts">See documentation - Alternate Layouts</a>)</b>: <input type = "text" name = "layouts" value="{{ request.form['layouts'] }}"/></input></p>
             <p>MCU Preset (Optional): <select name="mcu-preset" method="GET">
                 {% for preset in mcu_presets %}
                     <option value="{{preset}}" {% if mcu_choice == preset %} selected {% endif %} >{{preset}}</option>"

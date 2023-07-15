@@ -42,6 +42,7 @@ def run_script():
     device_ver = form_data['device-ver']
     manufacturer = form_data['manufacturer']
     mcu_choice = form_data.get('mcu-preset')
+    alternate_layouts = form_data.get("layouts")
     try:
         layers = int(form_data.get('layers'))
     except ValueError as e:
@@ -98,9 +99,13 @@ def run_script():
             else:
                 pin_dict = {}
 
+            # Parse alt layouts
+            if alternate_layouts:
+                alt_layouts = json.loads(alternate_layouts)
+
             # Generate a QMK info.json file used for QMK Configurator
             qmk_info_path = 'info.json'
-            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, board, pin_dict, diode_dir, manufacturer)
+            qmk_info_json = kbd_to_qmk_info(keyboard, board_name, maintainer, url, vendor_id, product_id, device_ver, mcu, bootloader, board, pin_dict, diode_dir, manufacturer, alt_layouts)
             qmk_info_content = json.dumps(qmk_info_json, indent=4, separators=(', ', ': '), sort_keys=False, cls=InfoJSONEncoder)
             # write_file(qmk_info_path, qmk_info_content)
 
