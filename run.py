@@ -1,5 +1,5 @@
 from util.serial import serialize, deserialize
-from util import read_file, write_file, gen_uid, MCU_DICT
+from util.util import read_file, write_file, gen_uid, MCU_DICT
 from util.converters import kbd_to_qmk_info, kbd_to_vial, kbd_to_keymap, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, kbd_to_main_config, extract_matrix_pins
 import json
 import requests

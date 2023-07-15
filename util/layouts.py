@@ -1,12 +1,12 @@
 from collections import OrderedDict
 from copy import deepcopy
-from typing import List, Dict
+from typing import List, Dict, Tuple, TypedDict
 
 from util.serial import Keyboard, Key, serialize, sort_keys
 from util.util import min_x_y
 
 
-def extract_ml_val_ndx(key, ml_val_lbl_ndx=3, ml_ndx_lbl_ndx=5):
+def extract_ml_val_ndx(key: Key, ml_val_lbl_ndx: int = 3, ml_ndx_lbl_ndx: int = 5) -> Tuple[int, int]:
     val_lbl = key.labels[ml_val_lbl_ndx]
     ndx_lbl = key.labels[ml_ndx_lbl_ndx]
 
@@ -23,7 +23,7 @@ def extract_ml_val_ndx(key, ml_val_lbl_ndx=3, ml_ndx_lbl_ndx=5):
     return val, ndx
 
 
-def extract_row_col(key, row_lbl_ndx=9, col_lbl_ndx=11):
+def extract_row_col(key: Key, row_lbl_ndx: int = 9, col_lbl_ndx: int = 11) -> Tuple[int, int]:
     row_lbl = key.labels[row_lbl_ndx]
     col_lbl = key.labels[col_lbl_ndx]
 
@@ -43,7 +43,7 @@ def extract_row_col(key, row_lbl_ndx=9, col_lbl_ndx=11):
     return row, col
 
 
-def get_multilayout_keys(kbd: Keyboard) -> bool:
+def get_multilayout_keys(kbd: Keyboard) -> List[Key]:
     """Returns a list of multilayout keys"""
     keys = []
     for key in kbd.keys:
@@ -287,16 +287,16 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
     kbd.keys = qmk_keys
     sort_keys(kbd.keys)  # sort keys (some multilayout keys may not be in the right order)
 
-    # DEBUG: To view what the layout_all will look like (as a KLE)
-    import json
-    from util import write_file
-    test_path = 'test.json'
-    write_file(test_path, json.dumps(serialize(kbd), ensure_ascii=False, indent=2))
+    # # DEBUG: To view what the layout_all will look like (as a KLE)
+    # import json
+    # from util.util import write_file
+    # test_path = 'test.json'
+    # write_file(test_path, json.dumps(serialize(kbd), ensure_ascii=False, indent=2))
 
     return kbd
 
 
-def convert_key_list_to_layout(keys: List[Key]) -> List:
+def convert_key_list_to_layout(keys: List[Key]) -> List[Key]:
     """Creates a layout array given a list of keys"""
     qmk_layout = []
     for key in keys:

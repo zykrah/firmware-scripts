@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 
 from dataclasses import dataclass, field as dcf
-from typing import Optional, List, Callable
+from typing import Any, Optional, List, Dict, Callable
 
 @dataclass
 class KeyDefault:
@@ -75,7 +75,7 @@ class Keyboard:
     meta: KeyboardMetadata = dcf(default_factory=KeyboardMetadata)
     keys: List[Key] = _dcf_list()
 
-def get_ndx(lst: list, ndx: int):
+def get_ndx(lst: list, ndx: int) -> Optional[Any]:
     """Gets the object at index `ndx` if it is a valid index, otherwise returns `None`.
     Used to replicate JavaScript behaviour.
     """
@@ -107,8 +107,8 @@ def set_ndx(lst: list, ndx: int, obj: object, filler=None) -> list:
         for i, key in enumerate(dct.keys()):
             lst[i] = (dct[i])
 
-def is_empty_object(o):
-    for prop in o:
+def is_empty_object(obj: object) -> bool:
+    for prop in obj:
         return False
     return True
 
@@ -141,10 +141,10 @@ DISALLOWED_ALIGNMENT_FOR_LABELS = [
     [4,5,6,7]		#11
 ]
 
-def sort_keys(keys):
+def sort_keys(keys: List[Key]) -> List[Key]:
     keys.sort(key=lambda k: ((k.rotation_angle + 360) % 360, k.rotation_x, k.rotation_y, k.y, k.x))
 
-def reorder_labels(key, current):
+def reorder_labels(key: Key, current: Key) -> TempKey:
     # Possible alignment flags in order of preference (this is fairly
     # arbitrary, but hoped to reduce raw data size).
     align = [7, 5, 6, 4, 3, 1, 2, 0]
@@ -176,7 +176,7 @@ def reorder_labels(key, current):
             set_ndx(ret.text_size, i, 0)
     return ret
 
-def compare_text_sizes(current, key, labels):
+def compare_text_sizes(current: Key, key: Key, labels: List[str]):
     if type(current) == int:
         current = [current]
     for i in range(12):
@@ -189,10 +189,10 @@ def serialize_prop(props, nname, val, defval):
         props[nname] = val
     return val
 
-def serialize(keyboard):
+def serialize(keyboard: Keyboard) -> List[List[Key]]:
     keys = keyboard.keys
-    rows = []
-    row = []
+    rows: list[List[Key]] = []
+    row: List[Key] = []
     current = deepcopy(Key())
     current.text_color = current.default.text_color
     current.align = 4
@@ -313,22 +313,21 @@ def reorder_labels_in(labels, align, filler=None, skipdefault=False):
         set_ndx(ret, lm, lbl)
     return ret
 
-def deserialize(rows):
+def deserialize(rows: List[Dict | List[Dict | str]]) -> Keyboard: #change dict to kle dict TypedDict
     # Initialize with defaults
     current = deepcopy(Key())
     meta = deepcopy(KeyboardMetadata())
-    keys = []
+    keys: List[Key] = []
     cluster = { "x": 0, "y": 0 }
     align = 4
     for r, rows_r in enumerate(rows):
         if isinstance(rows_r, list):
             for k, item in enumerate(rows_r):
-                key = item
-                if isinstance(key, str):
+                if isinstance(item, str):
                     new_key = deepcopy(current)
                     new_key.width2 = new_key.width2 if new_key.width2 != 0 else current.width
                     new_key.height2 = new_key.height2 if new_key.height2 != 0 else current.height
-                    new_key.labels = reorder_labels_in(key.split("\n"), align, "")
+                    new_key.labels = reorder_labels_in(item.split("\n"), align, "")
                     new_key.text_size = reorder_labels_in(new_key.text_size, align)
 
                     for i in range(12):
@@ -347,7 +346,7 @@ def deserialize(rows):
                     current.x2 = current.y2 = current.width2 = current.height2 = 0
                     current.nub = current.stepped = current.decal = False
 
-                else:
+                elif isinstance(item, dict): # Change dict to kle dict TypedDict
                     if item.get('r') != None:
                         if k != 0:
                             deserialize_error("'r' can only be used on the first key in a row", item)

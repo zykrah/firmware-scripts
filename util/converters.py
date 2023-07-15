@@ -2,6 +2,7 @@ from collections import OrderedDict
 from copy import deepcopy
 import json
 from json import JSONDecodeError
+from typing import Any, List, Dict, Tuple, Literal
 
 from util.serial import Keyboard, KeyboardMetadata, serialize, deserialize
 from util.util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
@@ -17,7 +18,21 @@ from util.layouts import convert_key_list_to_layout, extract_row_col, get_layout
 # - be able to manually set the layout_all
 # DONE create multiple layouts based on a list of multilayout options
 
-def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=None, pid=None, ver=None, mcu=None, bootloader=None, board=None, pin_dict=None, diode_dir="COL2ROW", manufacturer=None, alt_layouts=None) -> dict:
+def kbd_to_qmk_info(kbd: Keyboard,
+                    name: str = None,
+                    maintainer: str = None,
+                    url: str = None,
+                    vid: str = None,
+                    pid: str = None,
+                    ver: str = None,
+                    mcu: str = None,
+                    bootloader: str = None,
+                    board: str = None,
+                    pin_dict: dict = None,
+                    diode_dir: Literal['COL2ROW', 'ROW2COL'] = "COL2ROW",
+                    manufacturer: str = None,
+                    alt_layouts: Dict[str, List[int]] = None
+                    ) -> Dict[str, Any]: # Change to a TypedDict for qmk info dict
     """Converts a Keyboard into a QMK info.json (dict)"""
     # Check for encoder keys (Both VIA and VIAL)
     encoders_num = 0
@@ -143,7 +158,13 @@ def kbd_to_qmk_info(kbd: Keyboard, name=None, maintainer=None, url=None, vid=Non
 # - add way to input the index for which label indices to use for rows/cols/multilayout etc
 # - change this function to have a more similar structure to the qmk info converter (for multilayouts)
 
-def kbd_to_vial(kbd: Keyboard, vial_uid:str=None, vendor_id:str=None, product_id:str=None, lighting:str=None, name:str=None):
+def kbd_to_vial(kbd: Keyboard,
+                vial_uid: str = None,
+                vendor_id: str = None,
+                product_id: str = None,
+                lighting: str = None,
+                name: str = None
+                ) -> Tuple[Dict[str, Any], str]: # Change to a TypedDict for via/l json dict
     """Converts a Keyboard into a VIA/L JSON file and VIAL config.h"""
     if not lighting:
         lighting = 'none'
@@ -421,7 +442,7 @@ def kbd_to_layout_macro(kbd: Keyboard) -> str:
 
 # GENERATE KEYMAP
 
-def generate_keycode_conversion_dict(string:str) -> str:
+def generate_keycode_conversion_dict(string: str) -> Dict[str, str]:
     """For updating deprecated keycodes that .vil files still uses"""
     conversion_dict = {}
     for line in string.split("\n"):
@@ -431,7 +452,7 @@ def generate_keycode_conversion_dict(string:str) -> str:
         conversion_dict[split_line[0]] = split_line[1]
     return conversion_dict
 
-def keycodes_md_to_keycode_dict(k_md:str) -> dict:
+def keycodes_md_to_keycode_dict(k_md: str) -> Dict[str, str]:
     kc_dict = {}
 
     lines = k_md.split('\n')
@@ -462,7 +483,7 @@ def keycodes_md_to_keycode_dict(k_md:str) -> dict:
 
     return kc_dict
 
-def layout_str_to_layout_dict(string:str) -> dict:
+def layout_str_to_layout_dict(string: str) -> Dict[Any, Any]: # Change to a TypedDict for layout dict
     try:
         obj = json.loads(string)
     except JSONDecodeError as e:
@@ -470,7 +491,13 @@ def layout_str_to_layout_dict(string:str) -> dict:
     return obj
 
 
-def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=None, keycode_dict:dict=None, conversion_dict:dict=None) -> str:
+def kbd_to_keymap(kbd: Keyboard,
+                  layers: int = 4,
+                  lbl_ndx: int = 1,
+                  layout_dict: dict = None,
+                  keycode_dict: dict = None,
+                  conversion_dict: dict = None
+                  ) -> str:
     """Generates a keymap.c file"""
     # Check for encoder keys (Both VIA and VIAL)
     encoders_num = 0
@@ -632,7 +659,7 @@ def kbd_to_keymap(kbd: Keyboard, layers:int=4, lbl_ndx:int=1, layout_dict:dict=N
 
 # GENERATE MAIN CONFIG.H
 
-def kbd_to_main_config(kbd: Keyboard, layers:int=4) -> str:
+def kbd_to_main_config(kbd: Keyboard, layers: int = 4) -> str:
     config_lines = []
 
     if layers != 4 and layers > 0 and layers <= 32:
