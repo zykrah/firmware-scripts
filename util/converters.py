@@ -48,7 +48,12 @@ def kbd_to_qmk_info(kbd: Keyboard,
 
     # Before we figure out the all layout, generate the alternate layouts
     if alt_layouts:
-        alternate_layout_key_map = get_alternate_layouts(kbd, alt_layouts)
+        _alt_layouts = {}
+        for name in alt_layouts.keys():
+            # Format nicely
+            _alt_layouts['_'.join(name.lower().split())] = alt_layouts[name]
+            
+        alternate_layout_key_map = get_alternate_layouts(kbd, _alt_layouts)
     else:
         alternate_layout_key_map = None
 
