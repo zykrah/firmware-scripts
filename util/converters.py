@@ -101,7 +101,7 @@ def kbd_to_qmk_info(kbd: Keyboard,
         'manufacturer': manufacturer,
     }
 
-    if not alt_layouts:
+    if not alt_layouts or (len(alternate_layout_key_map.keys()) == 1 and 'all' in alternate_layout_key_map.keys()):
         keyboard['layouts'] = {
             'LAYOUT': {
                 'layout': qmk_layout_all
