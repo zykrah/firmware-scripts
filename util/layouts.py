@@ -268,15 +268,38 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
     # Special case to handle when a key isn't in the max multilayout but is required for a separate multilayout
     # E.g. Multilayout where a split spacebar layout doesn't include the original matrix value for full spacebar,
     # since that split multilayout will have more keys and will be picked by default.
+    outliers = {}
+
     for key in [k for k in kbd.keys if k in ml_keys]:
         ml_ndx, ml_val = extract_ml_val_ndx(key)
         max_val = ml_dict[ml_ndx]['max']
         matrix_list = [(extract_row_col(key)) for key in ml_dict[ml_ndx][max_val]]
         if (extract_row_col(key)) not in matrix_list:
             # print(key)
-            ml_dict[ml_ndx][max_val].append(key)
-            # Temporary, currently just adds the first key it sees into the layout_all, may cause issues but is a niche scenario
-            layout_all_keys.append(key)
+            if not outliers.get(ml_ndx):
+                outliers[ml_ndx] = {}
+            if not outliers[ml_ndx].get(ml_val):
+                outliers[ml_ndx][ml_val] = {}
+            if not outliers[ml_ndx][ml_val].get('keys'):
+                outliers[ml_ndx][ml_val]['keys'] = []
+            outliers[ml_ndx][ml_val]['keys'].append(key)
+
+    for ml_ndx in outliers.keys():
+        max_val = ml_dict[ml_ndx]['max']
+        for ml_val in outliers[ml_ndx].keys():
+            if not outliers[ml_ndx][ml_val].get('offsets'):
+                xmin, ymin = min_x_y(ml_dict[ml_ndx][ml_val])
+                x, y = min_x_y(ml_dict[ml_ndx][max_val])
+                outliers[ml_ndx][ml_val]['offsets'] = (xmin - x, ymin - y)
+            
+            x_offset, y_offset = outliers[ml_ndx][ml_val]['offsets']
+            for key in outliers[ml_ndx][ml_val]['keys']:
+                key.x -= x_offset
+                key.y -= y_offset
+        
+                ml_dict[ml_ndx][max_val].append(key)
+                # Temporary, currently just adds the first key it sees into the layout_all, may cause issues but is a niche scenario
+                layout_all_keys.append(key)
 
     # Offset all the remaining keys (align against the top left)
     x_offset, y_offset = min_x_y(layout_all_keys)
