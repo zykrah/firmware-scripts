@@ -3,9 +3,9 @@ from copy import deepcopy
 import json
 from json import JSONDecodeError
 
-from serial import Keyboard, KeyboardMetadata, serialize, deserialize
-from util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
-from layouts import convert_key_list_to_layout, extract_row_col, get_layout_all, extract_ml_val_ndx, get_alternate_layouts
+from util.serial import Keyboard, KeyboardMetadata, serialize, deserialize
+from util.util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
+from util.layouts import convert_key_list_to_layout, extract_row_col, get_layout_all, extract_ml_val_ndx, get_alternate_layouts
 
 # GENERATE INFO.JSON
 # TO-DO:

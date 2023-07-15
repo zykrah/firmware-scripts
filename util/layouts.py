@@ -2,8 +2,8 @@ from collections import OrderedDict
 from copy import deepcopy
 from typing import List, Dict
 
-from serial import Keyboard, Key, serialize, sort_keys
-from util import min_x_y
+from util.serial import Keyboard, Key, serialize, sort_keys
+from util.util import min_x_y
 
 
 def extract_ml_val_ndx(key, ml_val_lbl_ndx=3, ml_ndx_lbl_ndx=5):

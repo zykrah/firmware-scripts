@@ -1,14 +1,14 @@
 #Package import
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
-from serial import serialize, deserialize
-from util import read_file, write_file, gen_uid, MCU_PRESETS, MCU_DICT
-from converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins, via_to_kbd
+from util.serial import serialize, deserialize
+from util.util import read_file, write_file, gen_uid, MCU_PRESETS, MCU_DICT
+from util.converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins, via_to_kbd
 import json
 import re
 import requests
 from traceback import format_exc
 
-from json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
+from util.json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
 
 
 #initialise app
@@ -102,6 +102,8 @@ def run_script():
             # Parse alt layouts
             if alternate_layouts:
                 alt_layouts = json.loads(alternate_layouts)
+            else:
+                alt_layouts = {}
 
             # Generate a QMK info.json file used for QMK Configurator
             qmk_info_path = 'info.json'
@@ -146,7 +148,7 @@ def run_script():
             error_message = "ERROR: \n\n" + format_exc() + "\n\nREAD THE DOCUMENTATION IF YOU HAVE NOT ALREADY.\nSEE https://github.com/zykrah/firmware-scripts.\n\nIf there isn't a specific error, please contact me."
             return render_template('index.html',
                                    qmk_info_json = error_message,
-                                   vial_json = error_message,
+                                   vi_json = error_message,
                                    vial_config_h = error_message,
                                    main_config_h = error_message,
                                    keyboard_h = error_message,
