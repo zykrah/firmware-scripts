@@ -49,9 +49,9 @@ def kbd_to_qmk_info(kbd: Keyboard,
     # Before we figure out the all layout, generate the alternate layouts
     if alt_layouts:
         _alt_layouts = {}
-        for name in alt_layouts.keys():
+        for alt_name in alt_layouts.keys():
             # Format nicely
-            _alt_layouts['_'.join(name.lower().split())] = alt_layouts[name]
+            _alt_layouts['_'.join(alt_name.lower().split())] = alt_layouts[alt_name]
             
         alternate_layout_key_map = get_alternate_layouts(kbd, _alt_layouts)
     else:
@@ -193,7 +193,9 @@ def kbd_to_vial(kbd: Keyboard,
     
     for key in vial_kbd.keys:
         og_key = deepcopy(key)
-        # key.color = "#cccccc" # Set to default colour to remove clutter from the KLE (DISABLED)
+        # key colour whitelist
+        if not og_key.color in ["#cccccc", "#aaaaaa", "#777777"]:
+            key.color = "#cccccc"
         key.color = og_key.color
         key.labels = [None] * 12 # Empty labels
         key.textSize = [None] * 12 # Reset text size

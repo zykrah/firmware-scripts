@@ -144,12 +144,12 @@ def extract_matrix_pins(netlist: str,
                     if subprop[0] == "node" and subprop[1][1] == mcu_ref:
                         # print(subprop[3][1])
                         # print(re.findall(r"(?<="+"P"+r")\w+", subprop[3][1])[0])
-                        pin = '%s%s' % (output_pin_prefix, re.findall(r"(?<="+schem_pin_prefix+r")\w+", subprop[3][1])[0])
+                        pin = '%s%s' % (output_pin_prefix, re.findall(r"(?<="+schem_pin_prefix+r")\d+", subprop[3][1])[0])
                         matrix_pins["cols"].append(pin)
             elif prop[0] == "name" and prop[1].lower().startswith("row"):
                 for subprop in net:
                     if subprop[0] == "node" and subprop[1][1] == mcu_ref:
-                        pin = '%s%s' % (output_pin_prefix, re.findall(r"(?<="+schem_pin_prefix+r")\w+", subprop[3][1])[0])
+                        pin = '%s%s' % (output_pin_prefix, re.findall(r"(?<="+schem_pin_prefix+r")\d+", subprop[3][1])[0])
                         matrix_pins["rows"].append(pin)
 
     return matrix_pins
