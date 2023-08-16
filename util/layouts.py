@@ -52,6 +52,40 @@ def get_multilayout_keys(kbd: Keyboard) -> List[Key]:
             keys.append(key)
     return keys
 
+def generate_ml_dict(ml_keys: List[Key]) -> Dict:
+    ml_dict = {}
+    for key in ml_keys:
+        # Ignore VIAL Encoder keys
+        if key.labels[4] == 'e':
+            continue
+
+        ml_ndx, ml_val = extract_ml_val_ndx(key)
+
+        # Create dict with multilayout index if it doesn't exist
+        if not ml_dict.get(ml_ndx):
+            ml_dict[ml_ndx] = {}
+
+        # Create dict with multilayout value if it doesn't exist
+        # Also create list of keys if it doesn't exist
+        if not ml_dict[ml_ndx].get(ml_val):
+            ml_dict[ml_ndx][ml_val] = []
+
+        # Add key to dict if not in already
+        if not key in ml_dict[ml_ndx][ml_val]:
+            ml_dict[ml_ndx][ml_val].append(key)
+    
+    # Run a check to make sure all multilayouts are accounted for properly:
+    ml_ndxs = list(ml_dict.keys())
+    for ml_ndx in ml_ndxs:
+        ml_vals = list(ml_dict[ml_ndx].keys())
+        def check_consecutive(l):
+            return sorted(l) == list(range(min(l), max(l)+1))
+        if not (check_consecutive(ml_vals) and 0 in ml_vals and len(ml_vals) > 1):
+            raise Exception(f'''Multilayout index {ml_ndx} is not a valid/complete multilayout, 
+                            it only has the following values: {ml_vals}. Values must start from 0 and increase consecutively.
+                            Check your multilayout keys.''')
+
+    return ml_dict
 
 def get_alternate_layouts(kbd: Keyboard, layout_info: Dict[str, List[int]]) -> Dict[str, List[Key]]:
     """
@@ -83,26 +117,7 @@ def get_specific_layout(kbd: Keyboard, layout_idx: List[int]) -> List[Key]:
         layout_keys.append(key)
 
     # Generate a dict of all multilayouts
-    ml_dict = {}
-    for key in [k for k in kbd.keys if k in ml_keys]:
-        # Ignore VIAL Encoder keys
-        if key.labels[4] == 'e':
-            continue
-
-        ml_ndx, ml_val = extract_ml_val_ndx(key)
-
-        # Create dict with multilayout index if it doesn't exist
-        if not ml_dict.get(ml_ndx):
-            ml_dict[ml_ndx] = {}
-
-        # Create dict with multilayout value if it doesn't exist
-        # Also create list of keys if it doesn't exist
-        if not ml_dict[ml_ndx].get(ml_val):
-            ml_dict[ml_ndx][ml_val] = []
-
-        # Add key to dict if not in already
-        if not key in ml_dict[ml_ndx][ml_val]:
-            ml_dict[ml_ndx][ml_val].append(key)
+    ml_dict = generate_ml_dict(ml_keys)
 
     # Validate that our layout idx list is properly formed
     if len(layout_idx) != len(ml_dict.keys()):
@@ -179,26 +194,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
 
     # Generate a dict of all multilayouts
     # E.g. Used to test and figure out the multilayout value with the maximum amount of keys
-    ml_dict = {}
-    for key in [k for k in kbd.keys if k in ml_keys]:
-        # Ignore VIAL Encoder keys
-        if key.labels[4] == 'e':
-            continue
-
-        ml_ndx, ml_val = extract_ml_val_ndx(key)
-
-        # Create dict with multilayout index if it doesn't exist
-        if not ml_dict.get(ml_ndx):
-            ml_dict[ml_ndx] = {}
-
-        # Create dict with multilayout value if it doesn't exist
-        # Also create list of keys if it doesn't exist
-        if not ml_dict[ml_ndx].get(ml_val):
-            ml_dict[ml_ndx][ml_val] = []
-
-        # Add key to dict if not in already
-        if not key in ml_dict[ml_ndx][ml_val]:
-            ml_dict[ml_ndx][ml_val].append(key)
+    ml_dict = generate_ml_dict(ml_keys)
 
     # Iterate over multilayout keys
     for key in [k for k in kbd.keys if k in ml_keys]:
