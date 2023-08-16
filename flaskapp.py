@@ -148,7 +148,7 @@ def run_script():
             error_message = "ERROR: \n\n" + format_exc() + "\n\nREAD THE DOCUMENTATION IF YOU HAVE NOT ALREADY.\nSEE https://github.com/zykrah/firmware-scripts.\n\nIf there isn't a specific error, please contact me."
             return render_template('index.html',
                                    qmk_info_json = error_message,
-                                   vi_json = error_message,
+                                   vial_json = error_message,
                                    vial_config_h = error_message,
                                    main_config_h = error_message,
                                    keyboard_h = error_message,
