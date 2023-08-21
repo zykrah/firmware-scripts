@@ -81,9 +81,7 @@ def generate_ml_dict(ml_keys: List[Key]) -> Dict:
         def check_consecutive(l):
             return sorted(l) == list(range(min(l), max(l)+1))
         if not (check_consecutive(ml_vals) and 0 in ml_vals and len(ml_vals) > 1):
-            raise Exception(f'''Multilayout index {ml_ndx} is not a valid/complete multilayout, 
-                            it only has the following values: {ml_vals}. Values must start from 0 and increase consecutively.
-                            Check your multilayout keys.''')
+            raise Exception(f'''Multilayout index {ml_ndx} is not a valid/complete multilayout, it only has the following values: {sorted(ml_vals)}. Values must start from 0 and increase consecutively. Check your multilayout keys.''')
 
     return ml_dict
 
