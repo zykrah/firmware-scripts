@@ -4,6 +4,7 @@ import json
 from json import JSONDecodeError
 from typing import Any, List, Dict, Tuple, Literal
 
+from util.common_keys import COMMON_KEYS, COMMON_MODS
 from util.serial import Keyboard, KeyboardMetadata, serialize, deserialize
 from util.util import gen_uid, max_x_y, min_x_y, write_file, replace_chars, extract_matrix_pins
 from util.layouts import convert_key_list_to_layout, extract_row_col, get_layout_all, extract_ml_val_ndx, get_alternate_layouts
@@ -577,12 +578,29 @@ def kbd_to_keymap(kbd: Keyboard,
                             raise Exception('Invalid VIA layout file provided')
 
             else: # Default to label
-                if i == 0: # First layer
-                    kc = key.labels[keycode_label_no] # Keycode
-                    if not kc:
-                        kc = 'KC_TRNS'
-                else:
+                kc = key.labels[keycode_label_no] # Keycode
+                
+                if i > 0:
                     kc = 'KC_TRNS'
+
+                elif not kc:
+                    def get_key_by_value(dict, search):
+                        for key, value in dict.items():
+                            if value == search:
+                                return key
+                        return None
+                    
+                    lbls = deepcopy(key.labels)
+                    lbls[3] = ""
+                    lbls[5] = ""
+                    lbls[7] = ""
+                    lbls[9] = ""
+                    lbls[11] = ""
+
+                    kc = get_key_by_value(COMMON_KEYS, lbls)
+
+                    if not kc or i > 0:
+                        kc = 'KC_TRNS'
 
             # Convert (VIALs) deprecated keycodes into updated ones if required
             if conversion_dict:
