@@ -268,7 +268,8 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
         ml_ndx, ml_val = extract_ml_val_ndx(key)
         max_val = ml_dict[ml_ndx]['max']
         matrix_list = [(extract_row_col(key)) for key in ml_dict[ml_ndx][max_val]]
-        if (extract_row_col(key)) not in matrix_list:
+        row, col = extract_row_col(key)
+        if (row, col) not in matrix_list:
             # print(key)
             if not outliers.get(ml_ndx):
                 outliers[ml_ndx] = {}
@@ -277,6 +278,7 @@ def get_layout_all(kbd: Keyboard) -> Keyboard:
             if not outliers[ml_ndx][ml_val].get('keys'):
                 outliers[ml_ndx][ml_val]['keys'] = []
             outliers[ml_ndx][ml_val]['keys'].append(key)
+            matrix_list.append((row, col))
 
     for ml_ndx in outliers.keys():
         max_val = ml_dict[ml_ndx]['max']
