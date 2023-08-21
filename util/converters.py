@@ -297,6 +297,8 @@ def kbd_to_vial(kbd: Keyboard,
         del vial_dict["vendorId"]
     if not product_id:
         del vial_dict["productId"]
+    if not vial_ml:
+        del vial_dict["layouts"]["labels"]
 
     # Generation of config.h file
     config_h = "/* SPDX-License-Identifier: GPL-2.0-or-later */\n\n#pragma once"
