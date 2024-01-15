@@ -4,6 +4,7 @@
 *.json
 *.old
 *.net
+*.vil
 __pycache__
 flaskapp.service
 flask.ini
