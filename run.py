@@ -3,6 +3,8 @@ from util.util import read_file, write_file, gen_uid, MCU_DICT
 from util.converters import kbd_to_qmk_info, kbd_to_vial, kbd_to_keymap, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, kbd_to_main_config, extract_matrix_pins
 import json
 import requests
+import os
+import datetime
 
 from util.json_encoders import * # from qmk_firmware/lib/python/qmk/json_encoders.py, for generating info.json
 
@@ -80,9 +82,30 @@ write_file(vial_config_h_path, vial_config_h)
 
 keymap_c_path = 'keymap.c'
 layout_dict = layout_str_to_layout_dict(read_file('vil.json'))
-link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
-keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
-# keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
+
+def retrieve_keycodes_md(link=None):
+    print('retrieving keycodes.md from github')
+    if not link:
+        link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
+    return requests.get(link).text
+
+keycodes_md_path = 'keycodes.md'
+
+if not os.path.exists(keycodes_md_path):
+    write_file(keycodes_md_path, retrieve_keycodes_md())
+
+timestamp = os.path.getmtime(keycodes_md_path)
+datestamp = datetime.datetime.fromtimestamp(timestamp)
+
+# Update keycodes.md if it's old (HAVE TEMPORARILY SET TO 2 YEARS)
+if datestamp < datetime.datetime.now() - datetime.timedelta(weeks=104):
+    content = retrieve_keycodes_md()
+    keycodes_dict = keycodes_md_to_keycode_dict(content)
+    write_file(keycodes_md_path, content)
+else: # Otherwise just use the cached version
+    keycodes_dict = keycodes_md_to_keycode_dict(read_file(keycodes_md_path))
+
+
 conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
 
 keymap_c_content = kbd_to_keymap(keyboard, layers, 1, layout_dict, keycodes_dict, conversion_dict)

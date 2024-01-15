@@ -5,6 +5,8 @@ from util.util import read_file, write_file, gen_uid, MCU_PRESETS, MCU_DICT
 from util.converters import kbd_to_keymap, kbd_to_qmk_info, kbd_to_vial, kbd_to_layout_macro, kbd_to_main_config, layout_str_to_layout_dict, keycodes_md_to_keycode_dict, generate_keycode_conversion_dict, extract_matrix_pins, via_to_kbd
 import json
 import re
+import os
+import datetime
 import requests
 from traceback import format_exc
 
@@ -130,9 +132,29 @@ def run_script():
 
             if layout_file:
                 layout_dict = layout_str_to_layout_dict(layout_file)
-                # keycodes_dict = keycodes_md_to_keycode_dict(read_file('keycodes.md')) # Local fallback
-                link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
-                keycodes_dict = keycodes_md_to_keycode_dict(requests.get(link).text)
+
+                def retrieve_keycodes_md(link=None):
+                    print('retrieving keycodes.md from github')
+                    if not link:
+                        link = "https://raw.githubusercontent.com/qmk/qmk_firmware/master/docs/keycodes.md"
+                    return requests.get(link).text
+
+                keycodes_md_path = 'keycodes.md'
+
+                if not os.path.exists(keycodes_md_path):
+                    write_file(keycodes_md_path, retrieve_keycodes_md())
+
+                timestamp = os.path.getmtime(keycodes_md_path)
+                datestamp = datetime.datetime.fromtimestamp(timestamp)
+
+                # Update keycodes.md if it's old
+                if datestamp < datetime.datetime.now() - datetime.timedelta(weeks=104):
+                    content = retrieve_keycodes_md()
+                    keycodes_dict = keycodes_md_to_keycode_dict(content)
+                    write_file(keycodes_md_path, content)
+                else: # Otherwise just use the cached version
+                    keycodes_dict = keycodes_md_to_keycode_dict(read_file(keycodes_md_path))
+
                 conversion_dict = generate_keycode_conversion_dict(read_file('deprecated_keycodes.txt'))
 
                 keymap_content = kbd_to_keymap(keyboard, layers, 1, layout_dict, keycodes_dict, conversion_dict)
