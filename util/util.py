@@ -137,19 +137,19 @@ def extract_matrix_pins(netlist: str,
     if not mcu_ref:
         raise Exception(f"MCU Reference (eg. U2) not found in netlist!")
 
+    # Might be an issue: works on the presumption that the nets are ordered in a certain way: ie col0, col1, col2... row0, row1, row2...
+    # (it seems that KiCAD orders them this way, but I'm not sure if it's guaranteed)
     for net in tree[6]:
         for prop in net:
             if prop[0] == "name" and prop[1].lower().startswith("col"):
                 for subprop in net:
                     if subprop[0] == "node" and subprop[1][1] == mcu_ref:
-                        # print(subprop[3][1])
-                        # print(re.findall(r"(?<="+"P"+r")\w+", subprop[3][1])[0])
-                        pin = '%s%s' % (output_pin_prefix, re.findall(r"(?<="+schem_pin_prefix+r")\d+", subprop[3][1])[0])
+                        pin = '%s%s' % (output_pin_prefix, re.findall(schem_pin_prefix+r"([A-Za-z0-9]+)", subprop[3][1])[0])
                         matrix_pins["cols"].append(pin)
             elif prop[0] == "name" and prop[1].lower().startswith("row"):
                 for subprop in net:
                     if subprop[0] == "node" and subprop[1][1] == mcu_ref:
-                        pin = '%s%s' % (output_pin_prefix, re.findall(r"(?<="+schem_pin_prefix+r")\d+", subprop[3][1])[0])
+                        pin = '%s%s' % (output_pin_prefix, re.findall(schem_pin_prefix+r"([A-Za-z0-9]+)", subprop[3][1])[0])
                         matrix_pins["rows"].append(pin)
 
     return matrix_pins
